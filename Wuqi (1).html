@@ -1,0 +1,4000 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f7f7f5">
+<meta name="description" content="Wuqi Store — keşfet, kaydet ve sepetini oluştur.">
+<title>Wuqi Store</title>
+<style>
+/* ================================================================
+   WUQI STORE — SINGLE FILE STOREFRONT
+   ---------------------------------------------------------------
+   Product source: DummyJSON public demo API.
+   Address suggestions: Photon / OpenStreetMap public geocoder.
+   Cart and saved products: local browser storage.
+   No payment gateway, no live order fulfilment, no backend account.
+   ================================================================ */
+
+:root {
+  color-scheme: light;
+  --page: #f7f7f5;
+  --surface: #ffffff;
+  --surface-soft: #f0f0ed;
+  --surface-hover: #e9e9e5;
+  --ink: #111111;
+  --ink-soft: #62625e;
+  --ink-faint: #92928c;
+  --line: rgba(17, 17, 17, 0.10);
+  --line-strong: rgba(17, 17, 17, 0.18);
+  --accent: #111111;
+  --accent-contrast: #ffffff;
+  --success: #237a4b;
+  --warning: #a66a16;
+  --danger: #c33b37;
+  --shadow-sm: 0 5px 20px rgba(0, 0, 0, 0.045);
+  --shadow-md: 0 18px 55px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 28px 90px rgba(0, 0, 0, 0.18);
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-xl: 34px;
+  --content: 1220px;
+  --header-height: 76px;
+  --ease: cubic-bezier(.2, .75, .25, 1);
+  --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #101010;
+  --surface: #191919;
+  --surface-soft: #222222;
+  --surface-hover: #2b2b2b;
+  --ink: #f5f5f2;
+  --ink-soft: #b2b2ac;
+  --ink-faint: #81817b;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.17);
+  --accent: #f3f3f0;
+  --accent-contrast: #111111;
+  --success: #70c993;
+  --warning: #e0ae61;
+  --danger: #f08078;
+  --shadow-sm: 0 5px 22px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 18px 55px rgba(0, 0, 0, 0.34);
+  --shadow-lg: 0 28px 90px rgba(0, 0, 0, 0.48);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background .28s ease, color .28s ease;
+}
+
+body.is-locked {
+  overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  color: var(--accent-contrast);
+  background: var(--accent);
+}
+
+.page-shell {
+  width: min(100% - 36px, var(--content));
+  margin: 0 auto;
+}
+
+/* ------------------------------ HEADER -------------------------- */
+
+.site-header {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  height: var(--header-height);
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--page) 88%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.header-inner {
+  width: min(100% - 36px, var(--content));
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.brand-mark {
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+  border-radius: 13px;
+  color: #fff;
+  background: #111;
+  font-weight: 950;
+  font-size: 23px;
+  letter-spacing: -2px;
+  transform: rotate(-4deg);
+}
+
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 48px;
+  top: -6px;
+  right: 7px;
+  background: rgba(255, 255, 255, .12);
+  transform: rotate(24deg);
+}
+
+.brand-name {
+  font-size: 19px;
+  font-weight: 950;
+  letter-spacing: -1.1px;
+  line-height: 1;
+}
+
+.brand-name span {
+  font-weight: 500;
+  letter-spacing: -.7px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-button {
+  position: relative;
+  width: 43px;
+  height: 43px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.icon-button:hover {
+  border-color: var(--line);
+  background: var(--surface);
+  transform: translateY(-1px);
+}
+
+.icon-button svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.count-badge {
+  position: absolute;
+  top: 1px;
+  right: 0;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--page);
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.header-label {
+  display: none;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+/* ------------------------------ INTRO --------------------------- */
+
+.intro {
+  padding: 62px 0 27px;
+  text-align: center;
+}
+
+.intro-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 17px;
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 2.6px;
+  text-transform: uppercase;
+}
+
+.intro-kicker::before,
+.intro-kicker::after {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: var(--ink-faint);
+}
+
+.intro h1 {
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: clamp(42px, 7vw, 82px);
+  font-weight: 950;
+  line-height: .94;
+  letter-spacing: -.075em;
+}
+
+.intro h1 span {
+  color: var(--ink-faint);
+  font-weight: 450;
+}
+
+.intro-copy {
+  max-width: 480px;
+  margin: 20px auto 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* ------------------------------- SEARCH ------------------------- */
+
+.search-wrap {
+  position: relative;
+  z-index: 10;
+  width: min(100%, 590px);
+  margin: 29px auto 0;
+  text-align: left;
+}
+
+.search-box {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 8px 7px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.search-box:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .08);
+  transform: translateY(-1px);
+}
+
+.search-symbol {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  color: var(--ink-soft);
+}
+
+.search-symbol svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+}
+
+.search-input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.search-input::placeholder {
+  color: var(--ink-faint);
+  font-weight: 500;
+}
+
+.search-clear {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  display: none;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.search-clear.visible {
+  display: grid;
+}
+
+.search-clear svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.search-hint {
+  margin: 10px 5px 0;
+  color: var(--ink-faint);
+  font-size: 10px;
+  text-align: center;
+}
+
+/* ------------------------------ CATEGORY ------------------------ */
+
+.category-area {
+  margin: 35px 0 0;
+}
+
+.category-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 1px 10px;
+  scrollbar-width: none;
+}
+
+.category-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.category-chip {
+  flex: 0 0 auto;
+  min-height: 37px;
+  padding: 0 15px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.category-chip:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.category-chip.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+/* ------------------------------ CATALOG ------------------------- */
+
+.catalog {
+  padding: 18px 0 90px;
+}
+
+.catalog-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 7px 0 20px;
+}
+
+.catalog-title-wrap {
+  min-width: 0;
+}
+
+.section-eyebrow {
+  margin-bottom: 5px;
+  color: var(--ink-faint);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.catalog-title {
+  margin: 0;
+  font-size: clamp(23px, 4vw, 31px);
+  font-weight: 950;
+  letter-spacing: -1.5px;
+}
+
+.catalog-subtitle {
+  margin: 6px 0 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.catalog-tools {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.result-count {
+  color: var(--ink-faint);
+  font-size: 10px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.sort-select {
+  max-width: 145px;
+  min-height: 38px;
+  padding: 0 29px 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.product-card {
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .018);
+  animation: card-in .45s var(--ease) both;
+  transition: border-color .22s ease, box-shadow .22s ease, transform .22s ease;
+}
+
+.product-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-3px);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1.02;
+  overflow: hidden;
+  border: 0;
+  padding: 12px;
+  background: var(--surface-soft);
+  cursor: pointer;
+}
+
+.product-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  transition: transform .45s var(--ease);
+}
+
+:root[data-theme="dark"] .product-media img {
+  mix-blend-mode: normal;
+}
+
+.product-card:hover .product-media img {
+  transform: scale(1.055);
+}
+
+.product-category-tag {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  max-width: calc(100% - 20px);
+  overflow: hidden;
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, .06);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .88);
+  color: #222;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .4px;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+
+.favorite-toggle {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0, 0, 0, .08);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .9);
+  color: #242424;
+  cursor: pointer;
+  transition: transform .2s ease, background .2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.favorite-toggle:hover {
+  transform: scale(1.08);
+}
+
+.favorite-toggle svg {
+  width: 16px;
+  height: 16px;
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 1.9;
+}
+
+.favorite-toggle.is-saved svg {
+  fill: #111;
+}
+
+.product-content {
+  padding: 12px 12px 13px;
+}
+
+.product-brand {
+  min-height: 12px;
+  overflow: hidden;
+  color: var(--ink-faint);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.product-name {
+  min-height: 38px;
+  margin: 6px 0 8px;
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.42;
+  letter-spacing: -.25px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.product-meta {
+  min-height: 17px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: 9px;
+}
+
+.rating-star {
+  color: #c58a2a;
+  font-size: 11px;
+}
+
+.product-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.product-price {
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: -.7px;
+  white-space: nowrap;
+}
+
+.product-price small {
+  margin-left: 3px;
+  color: var(--ink-faint);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.add-cart-button {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 11px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  cursor: pointer;
+  transition: transform .2s ease, opacity .2s ease;
+}
+
+.add-cart-button:hover {
+  transform: scale(1.07);
+}
+
+.add-cart-button svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ------------------------------ LOADING ------------------------- */
+
+.skeleton-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface);
+}
+
+.skeleton-block {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-soft);
+}
+
+.skeleton-block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-image {
+  aspect-ratio: 1 / 1.02;
+}
+
+.skeleton-line {
+  height: 9px;
+  margin: 13px 12px 0;
+  border-radius: 9px;
+}
+
+.skeleton-line.short {
+  width: 38%;
+}
+
+.skeleton-line.medium {
+  width: 68%;
+  margin-top: 9px;
+}
+
+.skeleton-line.long {
+  width: 82%;
+  margin-top: 9px;
+}
+
+.skeleton-footer {
+  height: 34px;
+  margin: 14px 12px 12px;
+  border-radius: 9px;
+}
+
+.load-more-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 30px 0 10px;
+}
+
+.load-more-button {
+  min-width: 175px;
+  min-height: 45px;
+  padding: 0 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: 13px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+
+.load-more-button:hover {
+  background: var(--surface-soft);
+  transform: translateY(-2px);
+}
+
+.end-message {
+  padding: 28px 0 5px;
+  color: var(--ink-faint);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ------------------------------ EMPTY / ERROR ------------------- */
+
+.empty-state {
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: center;
+  padding: 65px 20px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-align: center;
+}
+
+.empty-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 15px;
+  border-radius: 18px;
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+}
+
+.empty-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+}
+
+.empty-state h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -.6px;
+}
+
+.empty-state p {
+  max-width: 330px;
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.empty-action {
+  min-height: 39px;
+  margin-top: 17px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+/* ------------------------------ FOOTER -------------------------- */
+
+.site-footer {
+  padding: 37px 0 28px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 28px;
+}
+
+.footer-brand-copy {
+  max-width: 360px;
+  margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.75;
+}
+
+.footer-note {
+  max-width: 280px;
+  color: var(--ink-faint);
+  font-size: 9px;
+  line-height: 1.7;
+  text-align: right;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 27px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-faint);
+  font-size: 9px;
+}
+
+.footer-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ------------------------------ OVERLAYS ------------------------ */
+
+.overlay {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, .48);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .25s ease, visibility .25s ease;
+  backdrop-filter: blur(4px);
+}
+
+.overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dialog {
+  width: min(100%, 760px);
+  max-height: min(88vh, 900px);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 25px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(18px) scale(.985);
+  transition: transform .28s var(--ease);
+}
+
+.overlay.open .dialog {
+  transform: translateY(0) scale(1);
+}
+
+.dialog-header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 17px 19px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.dialog-heading {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 950;
+  letter-spacing: -.7px;
+}
+
+.dialog-close {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.dialog-close svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.dialog-body {
+  padding: 20px;
+}
+
+/* ------------------------------ PRODUCT DETAIL ------------------ */
+
+.detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 25px;
+}
+
+.detail-gallery {
+  min-width: 0;
+}
+
+.detail-main-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--surface-soft);
+  padding: 18px;
+}
+
+.detail-main-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+:root[data-theme="dark"] .detail-main-image img {
+  mix-blend-mode: normal;
+}
+
+.detail-thumbnails {
+  display: flex;
+  gap: 8px;
+  margin-top: 9px;
+  overflow-x: auto;
+}
+
+.detail-thumb {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  cursor: pointer;
+}
+
+.detail-thumb.active {
+  border-color: var(--ink);
+}
+
+.detail-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.detail-info {
+  min-width: 0;
+}
+
+.detail-brand {
+  color: var(--ink-faint);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.detail-title {
+  margin: 8px 0 10px;
+  font-size: clamp(22px, 4vw, 31px);
+  font-weight: 950;
+  line-height: 1.1;
+  letter-spacing: -1.3px;
+}
+
+.detail-rating {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 17px;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+.detail-price {
+  margin: 0 0 15px;
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: -1.4px;
+}
+
+.detail-price small {
+  margin-left: 5px;
+  color: var(--ink-faint);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.detail-description {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.85;
+}
+
+.detail-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.detail-fact {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-soft);
+}
+
+.detail-fact span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink-faint);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+}
+
+.detail-fact strong {
+  display: block;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.primary-button,
+.secondary-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 15px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .2s ease, opacity .2s ease, background .2s ease;
+}
+
+.primary-button {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.secondary-button {
+  background: transparent;
+  color: var(--ink);
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+  transform: translateY(-2px);
+}
+
+.primary-button svg,
+.secondary-button svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+}
+
+/* ------------------------------ SIDE DRAWER --------------------- */
+
+.drawer-overlay {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  background: rgba(0, 0, 0, .42);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .25s ease, visibility .25s ease;
+}
+
+.drawer-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(100%, 445px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(100%);
+  transition: transform .3s var(--ease);
+}
+
+.drawer-overlay.open .drawer {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 19px;
+  border-bottom: 1px solid var(--line);
+}
+
+.drawer-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 950;
+  letter-spacing: -.8px;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow: auto;
+  padding: 15px 18px;
+}
+
+.drawer-footer {
+  padding: 16px 18px calc(17px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.drawer-empty {
+  display: grid;
+  justify-items: center;
+  padding: 60px 20px;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.drawer-empty svg {
+  width: 39px;
+  height: 39px;
+  margin-bottom: 13px;
+  fill: none;
+  stroke: var(--ink-faint);
+  stroke-width: 1.4;
+}
+
+.drawer-empty strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.drawer-empty span {
+  max-width: 240px;
+  margin-top: 7px;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.cart-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) auto;
+  gap: 11px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.cart-image {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 7px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.cart-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cart-row-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+}
+
+.cart-row-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.cart-row-price {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.quantity-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+.quantity-control button {
+  width: 23px;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.quantity-control span {
+  min-width: 13px;
+  font-size: 10px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.remove-item {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.remove-item:hover {
+  color: var(--danger);
+  background: var(--surface-soft);
+}
+
+.remove-item svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 7px 0;
+  color: var(--ink-soft);
+  font-size: 10px;
+}
+
+.summary-line strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.summary-total {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.full-button {
+  width: 100%;
+  min-height: 47px;
+  margin-top: 14px;
+}
+
+.demo-caption {
+  margin: 10px 2px 0;
+  color: var(--ink-faint);
+  font-size: 9px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* ------------------------------ SAVED LIST ---------------------- */
+
+.saved-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.saved-item {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.saved-item-image {
+  width: 100%;
+  aspect-ratio: 1 / .9;
+  padding: 12px;
+  border: 0;
+  background: var(--surface-soft);
+  cursor: pointer;
+}
+
+.saved-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.saved-item-info {
+  padding: 10px;
+}
+
+.saved-item-info strong {
+  min-height: 31px;
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.saved-item-info span {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.saved-item-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.saved-item-actions button {
+  min-height: 30px;
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 8px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+/* ------------------------------ CHECKOUT ------------------------ */
+
+.checkout-dialog {
+  width: min(100%, 570px);
+}
+
+.checkout-intro {
+  margin: 0 0 18px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.checkout-form {
+  display: grid;
+  gap: 13px;
+}
+
+.form-field {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+.form-field label {
+  color: var(--ink-soft);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line-strong);
+  border-radius: 11px;
+  padding: 0 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.form-field textarea {
+  min-height: 80px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.form-grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.address-results {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  max-height: 210px;
+  overflow: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.address-option {
+  width: 100%;
+  display: block;
+  padding: 11px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+}
+
+.address-option:last-child {
+  border-bottom: 0;
+}
+
+.address-option:hover {
+  background: var(--surface-soft);
+}
+
+.address-option strong {
+  display: block;
+  font-weight: 900;
+}
+
+.address-option span {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-faint);
+}
+
+.address-help {
+  color: var(--ink-faint);
+  font-size: 8px;
+  line-height: 1.55;
+}
+
+.checkout-total-box {
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.order-success {
+  display: grid;
+  justify-items: center;
+  padding: 38px 20px;
+  text-align: center;
+}
+
+.success-mark {
+  width: 57px;
+  height: 57px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--success);
+}
+
+.success-mark svg {
+  width: 27px;
+  height: 27px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+
+.order-success h3 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 950;
+}
+
+.order-success p {
+  max-width: 360px;
+  margin: 9px 0 0;
+  color: var(--ink-soft);
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+/* ------------------------------ TOAST --------------------------- */
+
+.toast-region {
+  position: fixed;
+  z-index: 150;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  min-width: 180px;
+  max-width: min(330px, calc(100vw - 36px));
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-md);
+  font-size: 10px;
+  font-weight: 850;
+  animation: toast-in .25s var(--ease) both;
+}
+
+.toast::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.toast.error::before {
+  background: var(--danger);
+}
+
+.toast.out {
+  animation: toast-out .2s ease both;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+}
+
+/* ------------------------------ BACK TO TOP --------------------- */
+
+.back-to-top {
+  position: fixed;
+  z-index: 25;
+  right: 18px;
+  bottom: 18px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity .2s ease, visibility .2s ease, transform .2s ease;
+  cursor: pointer;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* ------------------------------ RESPONSIVE ---------------------- */
+
+@media (min-width: 560px) {
+  .page-shell {
+    width: min(100% - 52px, var(--content));
+  }
+  .header-inner {
+    width: min(100% - 52px, var(--content));
+  }
+  .intro {
+    padding-top: 78px;
+  }
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .product-media {
+    padding: 17px;
+  }
+  .product-content {
+    padding: 14px;
+  }
+  .product-name {
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 820px) {
+  .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .header-label {
+    display: inline;
+  }
+  .intro {
+    padding-top: 89px;
+  }
+  .search-wrap {
+    margin-top: 34px;
+  }
+  .category-area {
+    margin-top: 42px;
+  }
+  .catalog {
+    padding-top: 25px;
+  }
+  .product-card {
+    border-radius: 20px;
+  }
+  .product-media {
+    aspect-ratio: 1 / 1;
+  }
+  .product-name {
+    min-height: 40px;
+    font-size: 13px;
+  }
+  .product-price {
+    font-size: 18px;
+  }
+  .add-cart-button {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page-shell,
+  .header-inner {
+    width: min(100% - 26px, var(--content));
+  }
+  :root {
+    --header-height: 66px;
+  }
+  .brand-mark {
+    width: 35px;
+    height: 35px;
+    border-radius: 11px;
+    font-size: 21px;
+  }
+  .brand-name {
+    font-size: 17px;
+  }
+  .header-actions {
+    gap: 1px;
+  }
+  .icon-button {
+    width: 39px;
+    height: 39px;
+  }
+  .intro {
+    padding-top: 49px;
+  }
+  .intro-copy {
+    max-width: 330px;
+    font-size: 11px;
+  }
+  .search-wrap {
+    margin-top: 24px;
+  }
+  .category-area {
+    margin-top: 29px;
+  }
+  .catalog-head {
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .result-count {
+    display: none;
+  }
+  .sort-select {
+    max-width: 125px;
+    min-height: 35px;
+    font-size: 9px;
+  }
+  .product-grid {
+    gap: 9px;
+  }
+  .product-card {
+    border-radius: 14px;
+  }
+  .product-media {
+    padding: 9px;
+  }
+  .product-content {
+    padding: 10px;
+  }
+  .product-name {
+    min-height: 35px;
+    font-size: 10px;
+  }
+  .product-price {
+    font-size: 14px;
+  }
+  .add-cart-button {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+  }
+  .favorite-toggle {
+    top: 7px;
+    right: 7px;
+    width: 30px;
+    height: 30px;
+  }
+  .product-category-tag {
+    left: 7px;
+    bottom: 7px;
+    font-size: 7px;
+  }
+  .footer-top {
+    flex-direction: column;
+  }
+  .footer-note {
+    text-align: left;
+  }
+  .footer-bottom {
+    flex-direction: column;
+  }
+  .detail-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .detail-main-image {
+    max-height: 310px;
+  }
+  .dialog {
+    border-radius: 20px;
+  }
+  .dialog-body {
+    padding: 15px;
+  }
+  .overlay {
+    padding: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <button class="brand" type="button" id="brandHome" aria-label="Wuqi Store ana sayfa">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span class="brand-name">wuqi <span>store</span></span>
+    </button>
+    <nav class="header-actions" aria-label="Hızlı işlemler">
+      <button class="icon-button" type="button" id="savedOpen" aria-label="Kaydedilen ürünler" title="Kaydedilenler">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
+        <span class="count-badge" id="savedCount">0</span>
+        <span class="header-label">Kaydedilenler</span>
+      </button>
+      <button class="icon-button" type="button" id="cartOpen" aria-label="Sepeti aç" title="Sepet">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h2l2.3 11.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 1.9-1.4L22 7H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+        <span class="count-badge" id="cartCount">0</span>
+        <span class="header-label">Sepet</span>
+      </button>
+      <button class="icon-button" type="button" id="themeToggle" aria-label="Temayı değiştir" title="Açık / koyu tema">
+        <svg id="themeIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="intro page-shell" aria-labelledby="mainTitle">
+    <div class="intro-kicker">WUQI SELECTS</div>
+    <h1 id="mainTitle">Less noise.<br><span>More choice.</span></h1>
+    <p class="intro-copy">Günlük hayatına iyi gelen parçaları keşfet. Beğendiklerini kaydet, sepetini oluştur ve kendi seçkini hazırla.</p>
+    <div class="search-wrap">
+      <div class="search-box">
+        <span class="search-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></span>
+        <input class="search-input" id="searchInput" type="search" autocomplete="off" placeholder="Ürün, marka veya kategori ara..." aria-label="Ürün ara">
+        <button class="search-clear" id="searchClear" type="button" aria-label="Aramayı temizle"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </div>
+      <p class="search-hint">Aradığın ürünü bulmak için yazmaya başla</p>
+    </div>
+    <div class="category-area">
+      <div class="category-scroll" id="categoryList" aria-label="Ürün kategorileri">
+        <button class="category-chip active" type="button" data-category="all">Tüm ürünler</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="catalog page-shell" id="catalog" aria-labelledby="catalogTitle">
+    <div class="catalog-head">
+      <div class="catalog-title-wrap">
+        <div class="section-eyebrow">THE WUQI EDIT</div>
+        <h2 class="catalog-title" id="catalogTitle">Öne çıkan ürünler</h2>
+        <p class="catalog-subtitle" id="catalogSubtitle">Senin için seçilmiş ürünleri keşfet.</p>
+      </div>
+      <div class="catalog-tools">
+        <span class="result-count" id="resultCount">Yükleniyor...</span>
+        <select class="sort-select" id="sortSelect" aria-label="Ürünleri sırala">
+          <option value="default">Önerilen sıralama</option>
+          <option value="price-asc">Fiyat: Artan</option>
+          <option value="price-desc">Fiyat: Azalan</option>
+          <option value="rating-desc">En yüksek puan</option>
+          <option value="title-asc">İsme göre</option>
+        </select>
+      </div>
+    </div>
+    <div class="product-grid" id="productGrid" aria-live="polite">
+      <div class="skeleton-card"><div class="skeleton-block skeleton-image"></div><div class="skeleton-block skeleton-line short"></div><div class="skeleton-block skeleton-line long"></div><div class="skeleton-block skeleton-footer"></div></div>
+      <div class="skeleton-card"><div class="skeleton-block skeleton-image"></div><div class="skeleton-block skeleton-line short"></div><div class="skeleton-block skeleton-line long"></div><div class="skeleton-block skeleton-footer"></div></div>
+      <div class="skeleton-card"><div class="skeleton-block skeleton-image"></div><div class="skeleton-block skeleton-line short"></div><div class="skeleton-block skeleton-line long"></div><div class="skeleton-block skeleton-footer"></div></div>
+      <div class="skeleton-card"><div class="skeleton-block skeleton-image"></div><div class="skeleton-block skeleton-line short"></div><div class="skeleton-block skeleton-line long"></div><div class="skeleton-block skeleton-footer"></div></div>
+    </div>
+    <div class="load-more-wrap" id="loadMoreWrap" hidden>
+      <button class="load-more-button" type="button" id="loadMoreButton">Daha fazla ürün yükle</button>
+    </div>
+    <div class="end-message" id="endMessage" hidden>Şimdilik tüm ürünler bu kadar. ✦</div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="page-shell">
+    <div class="footer-top">
+      <div>
+        <button class="brand" type="button" id="footerHome" aria-label="Wuqi Store ana sayfa">
+          <span class="brand-mark" aria-hidden="true">W</span>
+          <span class="brand-name">wuqi <span>store</span></span>
+        </button>
+        <p class="footer-brand-copy">Seçkini oluştur. Beğendiğin ürünleri kaydet ve alışveriş listeni tek yerde tut.</p>
+      </div>
+      <div class="footer-note">Wuqi Store Bir Dropshipping Sitesidir. Lütfen Güven İhtiyacı İçin Araştırmalar Yapınız</div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="yearNow"></span> WUQI STORE</span>
+      <span><button class="footer-link" type="button" id="aboutDemo">Demo ve veri bilgisi</button></span>
+    </div>
+  </div>
+</footer>
+
+<div class="overlay" id="detailOverlay" aria-hidden="true">
+  <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="detailDialogTitle">
+    <div class="dialog-header">
+      <h2 class="dialog-heading" id="detailDialogTitle">Ürün detayları</h2>
+      <button class="dialog-close" type="button" data-close="detailOverlay" aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="dialog-body" id="detailBody"></div>
+  </section>
+</div>
+
+<div class="drawer-overlay" id="cartOverlay" aria-hidden="true">
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="drawer-header">
+      <h2 class="drawer-title" id="cartTitle">Sepetin</h2>
+      <button class="dialog-close" type="button" data-close="cartOverlay" aria-label="Sepeti kapat"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="drawer-content" id="cartContent"></div>
+    <div class="drawer-footer" id="cartFooter"></div>
+  </aside>
+</div>
+
+<div class="drawer-overlay" id="savedOverlay" aria-hidden="true">
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="savedTitle">
+    <div class="drawer-header">
+      <h2 class="drawer-title" id="savedTitle">Kaydedilenler</h2>
+      <button class="dialog-close" type="button" data-close="savedOverlay" aria-label="Kaydedilenleri kapat"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="drawer-content" id="savedContent"></div>
+  </aside>
+</div>
+
+<div class="overlay" id="checkoutOverlay" aria-hidden="true">
+  <section class="dialog checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+    <div class="dialog-header">
+      <h2 class="dialog-heading" id="checkoutTitle">Teslimat bilgileri</h2>
+      <button class="dialog-close" type="button" data-close="checkoutOverlay" aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="dialog-body" id="checkoutBody"></div>
+  </section>
+</div>
+
+<div class="overlay" id="aboutOverlay" aria-hidden="true">
+  <section class="dialog checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <div class="dialog-header">
+      <h2 class="dialog-heading" id="aboutTitle">Wuqi Store hakkında</h2>
+      <button class="dialog-close" type="button" data-close="aboutOverlay" aria-label="Kapat"><svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="dialog-body">
+      <p class="checkout-intro"><strong>Ürün verileri:</strong> DummyJSON açık demo API'sinden yüklenir. API fiyatları kaynakta hangi para birimindeyse o birim korunur; bu mağaza fiyatları Türk lirasına çevirdiğini iddia etmez.</p>
+      <p class="checkout-intro"><strong>Adres önerileri:</strong> Photon / OpenStreetMap üzerinden aranır. Adres alanına yazdığın arama metni öneri almak için bu servise gönderilir. İstersen adresi öneri seçmeden elle yazabilirsin.</p>
+      <p class="checkout-intro"><strong>Yerel kayıt:</strong> Sepet, kaydedilenler ve tema tercihi bu tarayıcının localStorage alanında tutulur. Başka cihazlara aktarılmaz.</p>
+      <p class="checkout-intro"><strong>Önemli:</strong> Bu proje ödeme kuruluşuna bağlı değildir. Kart bilgisi istemez, para çekmez, kargo başlatmaz ve gerçek sipariş iletmez. Tamamlama adımı yalnızca cihazında demo özeti oluşturur.</p>
+      <div class="detail-facts">
+        <div class="detail-fact"><span>Ürün API</span><strong>DummyJSON</strong></div>
+        <div class="detail-fact"><span>Adres arama</span><strong>Photon / OSM</strong></div>
+        <div class="detail-fact"><span>Kalıcı kayıt</span><strong>Bu tarayıcı</strong></div>
+        <div class="detail-fact"><span>Ödeme</span><strong>Yok · Demo</strong></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+<button class="back-to-top" id="backToTop" type="button" aria-label="Sayfanın başına dön"><svg viewBox="0 0 24 24"><path d="m5 14 7-7 7 7M12 7v14"/></svg></button>
+
+<script>
+'use strict';
+
+/* ================================================================
+   1. API CONFIGURATION AND APPLICATION STATE
+   ================================================================ */
+
+const CONFIG = Object.freeze({
+  productApi: 'https://dummyjson.com',
+  addressApi: 'https://photon.komoot.io/api/',
+  pageSize: 30,
+  addressLimit: 5,
+  addressDebounceMs: 650,
+  requestTimeoutMs: 14000,
+  storageKeys: {
+    theme: 'wuqi_theme_v1',
+    cart: 'wuqi_cart_v1',
+    saved: 'wuqi_saved_v1',
+    orders: 'wuqi_demo_orders_v1'
+  }
+});
+
+const state = {
+  products: [],
+  productMap: new Map(),
+  total: 0,
+  skip: 0,
+  categories: [],
+  activeCategory: 'all',
+  search: '',
+  sort: 'default',
+  loading: false,
+  hasMore: true,
+  requestId: 0,
+  cart: readStorage(CONFIG.storageKeys.cart, []),
+  saved: readStorage(CONFIG.storageKeys.saved, []),
+  theme: readStorage(CONFIG.storageKeys.theme, 'light'),
+  addressTimer: null,
+  addressRequestId: 0,
+  selectedAddress: null,
+  activeProduct: null,
+  currentFocus: null,
+  observer: null,
+  demoOrders: readStorage(CONFIG.storageKeys.orders, [])
+};
+
+/* ================================================================
+   2. DOM REFERENCES
+   ================================================================ */
+
+const dom = {
+  body: document.body,
+  root: document.documentElement,
+  productGrid: document.getElementById('productGrid'),
+  categoryList: document.getElementById('categoryList'),
+  searchInput: document.getElementById('searchInput'),
+  searchClear: document.getElementById('searchClear'),
+  sortSelect: document.getElementById('sortSelect'),
+  resultCount: document.getElementById('resultCount'),
+  catalogTitle: document.getElementById('catalogTitle'),
+  catalogSubtitle: document.getElementById('catalogSubtitle'),
+  loadMoreWrap: document.getElementById('loadMoreWrap'),
+  loadMoreButton: document.getElementById('loadMoreButton'),
+  endMessage: document.getElementById('endMessage'),
+  savedCount: document.getElementById('savedCount'),
+  cartCount: document.getElementById('cartCount'),
+  themeIcon: document.getElementById('themeIcon'),
+  detailOverlay: document.getElementById('detailOverlay'),
+  detailBody: document.getElementById('detailBody'),
+  cartOverlay: document.getElementById('cartOverlay'),
+  cartContent: document.getElementById('cartContent'),
+  cartFooter: document.getElementById('cartFooter'),
+  savedOverlay: document.getElementById('savedOverlay'),
+  savedContent: document.getElementById('savedContent'),
+  checkoutOverlay: document.getElementById('checkoutOverlay'),
+  checkoutBody: document.getElementById('checkoutBody'),
+  aboutOverlay: document.getElementById('aboutOverlay'),
+  toastRegion: document.getElementById('toastRegion'),
+  backToTop: document.getElementById('backToTop')
+};
+
+/* ================================================================
+   3. BASIC HELPERS
+   ================================================================ */
+
+function readStorage(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed ?? fallback;
+  } catch (error) {
+    console.warn('Wuqi Store: kayıt okunamadı.', error);
+    return fallback;
+  }
+}
+
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.warn('Wuqi Store: kayıt yazılamadı.', error);
+    showToast('Tarayıcı kaydı yapılamadı.', 'error');
+    return false;
+  }
+}
+
+function escapeHTML(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function formatMoney(value, currency = 'USD') {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return '—';
+  try {
+    return new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 2
+    }).format(amount);
+  } catch (error) {
+    return `${amount.toFixed(2)} ${currency}`;
+  }
+}
+
+function formatCategory(slug) {
+  return String(slug || '')
+    .split('-')
+    .map((word) => word.charAt(0).toLocaleUpperCase('tr-TR') + word.slice(1))
+    .join(' ');
+}
+
+function safeImage(url) {
+  if (typeof url !== 'string') return '';
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '';
+    return parsed.href;
+  } catch (error) {
+    return '';
+  }
+}
+
+function getProduct(id) {
+  return state.productMap.get(Number(id)) || null;
+}
+
+function allKnownProducts() {
+  return [...state.productMap.values()];
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast${type === 'error' ? ' error' : ''}`;
+  toast.textContent = message;
+  dom.toastRegion.appendChild(toast);
+  window.setTimeout(() => {
+    toast.classList.add('out');
+    window.setTimeout(() => toast.remove(), 240);
+  }, 2600);
+}
+
+function setBodyLock(locked) {
+  dom.body.classList.toggle('is-locked', Boolean(locked));
+}
+
+function openOverlay(element) {
+  state.currentFocus = document.activeElement;
+  element.classList.add('open');
+  element.setAttribute('aria-hidden', 'false');
+  setBodyLock(true);
+  const close = element.querySelector('[data-close]');
+  if (close) window.setTimeout(() => close.focus(), 50);
+}
+
+function closeOverlay(element) {
+  if (!element) return;
+  element.classList.remove('open');
+  element.setAttribute('aria-hidden', 'true');
+  const anyOpen = document.querySelector('.overlay.open, .drawer-overlay.open');
+  setBodyLock(Boolean(anyOpen));
+  if (!anyOpen && state.currentFocus && typeof state.currentFocus.focus === 'function') {
+    state.currentFocus.focus();
+  }
+}
+
+function svgIcon(name) {
+  const icons = {
+    cart: '<svg viewBox="0 0 24 24"><path d="M3 3h2l2.3 11.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 1.9-1.4L22 7H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>',
+    heart: '<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>',
+    bag: '<svg viewBox="0 0 24 24"><path d="M5 8h14l1 13H4L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+    box: '<svg viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>',
+    search: '<svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>',
+    close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+    check: '<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>'
+  };
+  return icons[name] || '';
+}
+
+/* ================================================================
+   4. THEME SYSTEM
+   ================================================================ */
+
+function applyTheme(theme, persist = true) {
+  const next = theme === 'dark' ? 'dark' : 'light';
+  state.theme = next;
+  dom.root.dataset.theme = next;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', next === 'dark' ? '#101010' : '#f7f7f5');
+  if (next === 'dark') {
+    dom.themeIcon.innerHTML = '<path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.5 8.5 0 1 0 20.2 15.1Z"/>';
+  } else {
+    dom.themeIcon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>';
+  }
+  if (persist) writeStorage(CONFIG.storageKeys.theme, next);
+}
+
+/* ================================================================
+   5. API REQUEST WRAPPER
+   ================================================================ */
+
+async function requestJSON(url, options = {}) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), CONFIG.requestTimeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+        ...(options.headers || {})
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`API yanıtı: ${response.status}`);
+    }
+    return await response.json();
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+function buildProductsURL() {
+  const params = new URLSearchParams({
+    limit: String(CONFIG.pageSize),
+    skip: String(state.skip)
+  });
+  const sortMap = {
+    'price-asc': ['price', 'asc'],
+    'price-desc': ['price', 'desc'],
+    'rating-desc': ['rating', 'desc'],
+    'title-asc': ['title', 'asc']
+  };
+  const sortInstruction = sortMap[state.sort];
+  if (sortInstruction) {
+    params.set('sortBy', sortInstruction[0]);
+    params.set('order', sortInstruction[1]);
+  }
+  if (state.search.trim()) {
+    params.set('q', state.search.trim());
+    return `${CONFIG.productApi}/products/search?${params.toString()}`;
+  }
+  if (state.activeCategory !== 'all') {
+    return `${CONFIG.productApi}/products/category/${encodeURIComponent(state.activeCategory)}?${params.toString()}`;
+  }
+  return `${CONFIG.productApi}/products?${params.toString()}`;
+}
+
+/* ================================================================
+   6. CATEGORY API AND RENDERING
+   ================================================================ */
+
+async function loadCategories() {
+  try {
+    const categories = await requestJSON(`${CONFIG.productApi}/products/category-list`);
+    if (!Array.isArray(categories)) throw new Error('Kategori verisi beklenen biçimde değil.');
+    state.categories = categories;
+    renderCategories();
+  } catch (error) {
+    console.warn('Wuqi Store: kategoriler yüklenemedi.', error);
+    dom.categoryList.innerHTML = '<button class="category-chip active" type="button" data-category="all">Tüm ürünler</button>';
+  }
+}
+
+function renderCategories() {
+  const allButton = `<button class="category-chip${state.activeCategory === 'all' ? ' active' : ''}" type="button" data-category="all">Tüm ürünler</button>`;
+  const buttons = state.categories.map((category) => {
+    const active = state.activeCategory === category ? ' active' : '';
+    return `<button class="category-chip${active}" type="button" data-category="${escapeHTML(category)}">${escapeHTML(formatCategory(category))}</button>`;
+  }).join('');
+  dom.categoryList.innerHTML = allButton + buttons;
+}
+
+/* ================================================================
+   7. PRODUCT DATA LOADING
+   ================================================================ */
+
+async function loadProducts({ reset = false } = {}) {
+  if (reset) {
+    // A new search/category/sort request supersedes the previous request.
+    // The old fetch is ignored when it eventually resolves.
+    state.requestId += 1;
+    state.loading = false;
+    state.products = [];
+    state.skip = 0;
+    state.total = 0;
+    state.hasMore = true;
+    dom.productGrid.innerHTML = skeletonMarkup(4);
+    dom.endMessage.hidden = true;
+    dom.loadMoreWrap.hidden = true;
+  } else {
+    if (state.loading) return;
+    if (!state.hasMore) return;
+  }
+
+  const requestId = state.requestId;
+  state.loading = true;
+  dom.loadMoreButton.disabled = true;
+  dom.loadMoreButton.textContent = 'Yükleniyor...';
+
+  try {
+    const data = await requestJSON(buildProductsURL());
+    if (requestId !== state.requestId) return;
+    const incoming = Array.isArray(data.products) ? data.products : [];
+    const existing = new Set(state.products.map((item) => Number(item.id)));
+    const uniqueIncoming = incoming.filter((item) => !existing.has(Number(item.id)));
+    state.products.push(...uniqueIncoming);
+    for (const product of uniqueIncoming) {
+      state.productMap.set(Number(product.id), product);
+    }
+    state.total = Number(data.total) || state.products.length;
+    state.skip += incoming.length;
+    state.hasMore = state.skip < state.total && incoming.length > 0;
+    updateCatalogHeading();
+    renderProducts();
+    updateResultCount();
+    updateLoadMoreState();
+  } catch (error) {
+    if (requestId !== state.requestId) return;
+    console.error('Wuqi Store: ürünler yüklenemedi.', error);
+    if (!state.products.length) {
+      dom.productGrid.innerHTML = emptyMarkup(
+        'Ürünler şu an yüklenemedi',
+        'İnternet bağlantısı kesilmiş olabilir. İnternet bağlantını kontrol edip yeniden deneyebilirsin.',
+        'Yeniden dene',
+        'retry'
+      );
+    } else {
+      showToast('Yeni ürünler yüklenemedi. Tekrar deneyebilirsin.', 'error');
+    }
+  } finally {
+    if (requestId === state.requestId) {
+      state.loading = false;
+      dom.loadMoreButton.disabled = false;
+      dom.loadMoreButton.textContent = 'Daha fazla ürün yükle';
+    }
+  }
+}
+
+function skeletonMarkup(count = 4) {
+  return Array.from({ length: count }, () => `
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="skeleton-block skeleton-image"></div>
+      <div class="skeleton-block skeleton-line short"></div>
+      <div class="skeleton-block skeleton-line long"></div>
+      <div class="skeleton-block skeleton-footer"></div>
+    </div>
+  `).join('');
+}
+
+function updateCatalogHeading() {
+  if (state.search.trim()) {
+    dom.catalogTitle.textContent = 'Arama sonuçları';
+    dom.catalogSubtitle.textContent = `“${state.search.trim()}” için ürünler.`;
+  } else if (state.activeCategory !== 'all') {
+    dom.catalogTitle.textContent = formatCategory(state.activeCategory);
+    dom.catalogSubtitle.textContent = 'Bu kategorideki ürünleri keşfet.';
+  } else {
+    dom.catalogTitle.textContent = 'Öne çıkan ürünler';
+    dom.catalogSubtitle.textContent = 'Senin için seçilmiş ürünleri keşfet.';
+  }
+}
+
+function updateResultCount() {
+  const visible = state.products.length;
+  const total = state.total;
+  dom.resultCount.textContent = total ? `${visible} / ${total} ürün` : 'Ürün bulunamadı';
+}
+
+function updateLoadMoreState() {
+  const showButton = state.hasMore && state.products.length > 0;
+  dom.loadMoreWrap.hidden = !showButton;
+  dom.endMessage.hidden = state.hasMore || state.products.length === 0;
+}
+
+/* ================================================================
+   8. PRODUCT CARD RENDERING
+   ================================================================ */
+
+function productCardMarkup(product, index) {
+  const id = Number(product.id);
+  const title = escapeHTML(product.title || 'Ürün');
+  const brand = escapeHTML(product.brand || formatCategory(product.category));
+  const category = escapeHTML(formatCategory(product.category));
+  const image = safeImage(product.thumbnail || product.images?.[0]);
+  const price = formatMoney(product.price, 'USD');
+  const rating = Number(product.rating || 0);
+  const saved = state.saved.includes(id);
+  const available = Number(product.stock) > 0;
+  const delay = Math.min(index % 12, 8) * 35;
+  return `
+    <article class="product-card" style="animation-delay:${delay}ms" data-product-id="${id}">
+      <button class="product-media" type="button" data-action="detail" data-id="${id}" aria-label="${title} ürün detayını aç">
+        <img src="${escapeHTML(image)}" alt="${title}" loading="lazy" decoding="async" onerror="this.style.opacity='.2'; this.alt='Ürün görseli yüklenemedi';">
+        <span class="product-category-tag">${category}</span>
+      </button>
+      <button class="favorite-toggle${saved ? ' is-saved' : ''}" type="button" data-action="save" data-id="${id}" aria-label="${saved ? 'Kaydedilenlerden çıkar' : 'Kaydet'}" aria-pressed="${saved}">
+        ${svgIcon('heart')}
+      </button>
+      <div class="product-content">
+        <div class="product-brand">${brand}</div>
+        <h3 class="product-name">${title}</h3>
+        <div class="product-meta"><span class="rating-star">★</span><strong>${rating ? rating.toFixed(1) : '—'}</strong><span>·</span><span>${Number(product.stock) > 0 ? 'Stokta' : 'Stok bilgisi yok'}</span></div>
+        <div class="product-bottom">
+          <div class="product-price">${price}<small>Fiyat</small></div>
+          <button class="add-cart-button" type="button" data-action="add" data-id="${id}" aria-label="${title} sepete ekle" ${available ? '' : 'disabled'}>${svgIcon('bag')}</button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function sortProducts(products) {
+  const sorted = [...products];
+  switch (state.sort) {
+    case 'price-asc':
+      sorted.sort((a, b) => Number(a.price) - Number(b.price));
+      break;
+    case 'price-desc':
+      sorted.sort((a, b) => Number(b.price) - Number(a.price));
+      break;
+    case 'rating-desc':
+      sorted.sort((a, b) => Number(b.rating) - Number(a.rating));
+      break;
+    case 'title-asc':
+      sorted.sort((a, b) => String(a.title).localeCompare(String(b.title), 'tr'));
+      break;
+    default:
+      break;
+  }
+  return sorted;
+}
+
+function renderProducts() {
+  const products = sortProducts(state.products);
+  if (!products.length) {
+    dom.productGrid.innerHTML = emptyMarkup(
+      state.search.trim() ? 'Eşleşen ürün bulunamadı' : 'Bu kategoride ürün yok',
+      'Arama kelimeni değiştirebilir veya tüm ürünleri yeniden görüntüleyebilirsin.',
+      'Tüm ürünleri göster',
+      'all'
+    );
+    return;
+  }
+  dom.productGrid.innerHTML = products.map(productCardMarkup).join('');
+}
+
+function emptyMarkup(title, message, buttonLabel, action) {
+  return `
+    <div class="empty-state">
+      <div class="empty-icon">${svgIcon('search')}</div>
+      <h3>${escapeHTML(title)}</h3>
+      <p>${escapeHTML(message)}</p>
+      <button class="empty-action" type="button" data-action="${escapeHTML(action)}">${escapeHTML(buttonLabel)}</button>
+    </div>
+  `;
+}
+
+/* ================================================================
+   9. SEARCH, CATEGORY AND SORT EVENTS
+   ================================================================ */
+
+let searchTimer = null;
+
+function handleSearchInput() {
+  state.search = dom.searchInput.value.trim();
+  dom.searchClear.classList.toggle('visible', Boolean(dom.searchInput.value));
+  window.clearTimeout(searchTimer);
+  searchTimer = window.setTimeout(() => {
+    state.activeCategory = 'all';
+    renderCategories();
+    loadProducts({ reset: true });
+  }, 360);
+}
+
+function clearSearch() {
+  dom.searchInput.value = '';
+  state.search = '';
+  dom.searchClear.classList.remove('visible');
+  state.activeCategory = 'all';
+  renderCategories();
+  loadProducts({ reset: true });
+}
+
+function selectCategory(category) {
+  state.activeCategory = category;
+  state.search = '';
+  dom.searchInput.value = '';
+  dom.searchClear.classList.remove('visible');
+  renderCategories();
+  loadProducts({ reset: true });
+  document.getElementById('catalog').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ================================================================
+   10. SAVED PRODUCTS
+   ================================================================ */
+
+function toggleSaved(id) {
+  const productId = Number(id);
+  const index = state.saved.indexOf(productId);
+  if (index >= 0) {
+    state.saved.splice(index, 1);
+    showToast('Kaydedilenlerden çıkarıldı.');
+  } else {
+    state.saved.push(productId);
+    showToast('Kaydedilenlere eklendi.');
+  }
+  writeStorage(CONFIG.storageKeys.saved, state.saved);
+  updateHeaderCounts();
+  renderProducts();
+  if (dom.savedOverlay.classList.contains('open')) renderSaved();
+}
+
+function renderSaved() {
+  const items = state.saved.map((id) => getProduct(id)).filter(Boolean);
+  if (!items.length) {
+    dom.savedContent.innerHTML = `
+      <div class="drawer-empty">
+        ${svgIcon('heart')}
+        <strong>Henüz kaydettiğin ürün yok</strong>
+        <span>Beğendiğin ürünlerdeki kalp simgesine dokunarak burada saklayabilirsin.</span>
+      </div>
+    `;
+    return;
+  }
+  dom.savedContent.innerHTML = `
+    <div class="saved-grid">
+      ${items.map((product) => {
+        const id = Number(product.id);
+        const image = safeImage(product.thumbnail || product.images?.[0]);
+        return `
+          <article class="saved-item">
+            <button class="saved-item-image" type="button" data-action="detail" data-id="${id}">
+              <img src="${escapeHTML(image)}" alt="${escapeHTML(product.title)}" loading="lazy">
+            </button>
+            <div class="saved-item-info">
+              <strong>${escapeHTML(product.title)}</strong>
+              <span>${formatMoney(product.price, 'USD')}</span>
+              <div class="saved-item-actions">
+                <button type="button" data-action="add" data-id="${id}">Sepete ekle</button>
+                <button type="button" data-action="unsave" data-id="${id}">Kaldır</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ================================================================
+   11. CART MANAGEMENT
+   ================================================================ */
+
+function addToCart(id, quantity = 1) {
+  const productId = Number(id);
+  const product = getProduct(productId);
+  if (!product) {
+    showToast('Ürün bilgisi henüz hazır değil.', 'error');
+    return;
+  }
+  const availableStock = Math.max(0, Number(product.stock) || 0);
+  const current = state.cart.find((item) => Number(item.id) === productId);
+  const currentQuantity = current ? Number(current.quantity) : 0;
+  const requestedQuantity = Math.max(1, Number(quantity) || 1);
+  if (availableStock <= currentQuantity) {
+    showToast('Bu ürün için API stok miktarına ulaştın.', 'error');
+    return;
+  }
+  const nextQuantity = Math.min(availableStock, currentQuantity + requestedQuantity, 99);
+  if (current) {
+    current.quantity = nextQuantity;
+  } else {
+    state.cart.push({ id: productId, quantity: nextQuantity });
+  }
+  persistCart();
+  updateHeaderCounts();
+  renderCart();
+  showToast('Ürün sepete eklendi.');
+}
+
+function changeCartQuantity(id, delta) {
+  const item = state.cart.find((entry) => Number(entry.id) === Number(id));
+  if (!item) return;
+  const product = getProduct(id);
+  item.quantity = Number(item.quantity) + Number(delta);
+  if (item.quantity <= 0) {
+    state.cart = state.cart.filter((entry) => Number(entry.id) !== Number(id));
+  } else {
+    const stock = Math.max(0, Number(product?.stock) || 0);
+    if (stock <= 0) {
+      state.cart = state.cart.filter((entry) => Number(entry.id) !== Number(id));
+      showToast('Bu ürünün API stok bilgisi artık uygun değil.', 'error');
+    } else if (item.quantity > stock || item.quantity > 99) {
+      item.quantity = Math.min(stock, 99);
+      showToast('API stok miktarından fazlası eklenemez.', 'error');
+    }
+  }
+  persistCart();
+  updateHeaderCounts();
+  renderCart();
+}
+
+function removeFromCart(id) {
+  state.cart = state.cart.filter((item) => Number(item.id) !== Number(id));
+  persistCart();
+  updateHeaderCounts();
+  renderCart();
+  showToast('Ürün sepetten kaldırıldı.');
+}
+
+function persistCart() {
+  writeStorage(CONFIG.storageKeys.cart, state.cart);
+}
+
+function getCartItems() {
+  return state.cart
+    .map((entry) => ({ product: getProduct(entry.id), quantity: Number(entry.quantity) }))
+    .filter((entry) => entry.product && entry.quantity > 0);
+}
+
+function getCartTotals() {
+  const items = getCartItems();
+  const quantity = items.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotal = items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
+  return { items, quantity, subtotal };
+}
+
+function renderCart() {
+  const totals = getCartTotals();
+  if (!totals.items.length) {
+    dom.cartContent.innerHTML = `
+      <div class="drawer-empty">
+        ${svgIcon('bag')}
+        <strong>Sepetin şu an boş</strong>
+        <span>Beğendiğin ürünleri sepete eklediğinde burada görünecek.</span>
+      </div>
+    `;
+    dom.cartFooter.innerHTML = '';
+    return;
+  }
+
+  dom.cartContent.innerHTML = totals.items.map(({ product, quantity }) => {
+    const id = Number(product.id);
+    const image = safeImage(product.thumbnail || product.images?.[0]);
+    return `
+      <article class="cart-row">
+        <div class="cart-image"><img src="${escapeHTML(image)}" alt="${escapeHTML(product.title)}" loading="lazy"></div>
+        <div class="cart-row-info">
+          <strong class="cart-row-title">${escapeHTML(product.title)}</strong>
+          <span class="cart-row-price">${formatMoney(Number(product.price) * quantity, 'USD')}</span>
+          <div class="quantity-control" aria-label="Ürün adedi">
+            <button type="button" data-action="quantity" data-id="${id}" data-delta="-1" aria-label="Adedi azalt">−</button>
+            <span>${quantity}</span>
+            <button type="button" data-action="quantity" data-id="${id}" data-delta="1" aria-label="Adedi artır">+</button>
+          </div>
+        </div>
+        <button class="remove-item" type="button" data-action="remove" data-id="${id}" aria-label="Ürünü kaldır">${svgIcon('close')}</button>
+      </article>
+    `;
+  }).join('');
+
+  dom.cartFooter.innerHTML = `
+    <div class="summary-line"><span>Ürün adedi</span><strong>${totals.quantity}</strong></div>
+    <div class="summary-line"><span>Ara toplam</span><strong>${formatMoney(totals.subtotal, 'USD')}</strong></div>
+    <div class="summary-line summary-total"><span>Toplam</span><strong>${formatMoney(totals.subtotal, 'USD')}</strong></div>
+    <button class="primary-button full-button" type="button" id="checkoutStart">Teslimat adımına geç <span aria-hidden="true">→</span></button>
+    <p class="demo-caption">Demo akışıdır. Ödeme alınmaz, kargo veya gerçek sipariş oluşturulmaz.</p>
+  `;
+}
+
+function updateHeaderCounts() {
+  const cartQuantity = state.cart.reduce((sum, item) => sum + Math.max(0, Number(item.quantity) || 0), 0);
+  dom.cartCount.textContent = cartQuantity > 99 ? '99+' : String(cartQuantity);
+  dom.savedCount.textContent = state.saved.length > 99 ? '99+' : String(state.saved.length);
+}
+
+/* ================================================================
+   12. PRODUCT DETAILS
+   ================================================================ */
+
+function openProductDetail(id) {
+  const product = getProduct(id);
+  if (!product) return;
+  state.activeProduct = product;
+  renderProductDetail(product);
+  openOverlay(dom.detailOverlay);
+}
+
+function renderProductDetail(product, selectedImage = null) {
+  const images = Array.isArray(product.images) && product.images.length
+    ? product.images.map(safeImage).filter(Boolean)
+    : [safeImage(product.thumbnail)].filter(Boolean);
+  const mainImage = selectedImage || images[0] || '';
+  const saved = state.saved.includes(Number(product.id));
+  const rating = Number(product.rating || 0);
+  const stockLabel = Number(product.stock) > 0 ? `${product.stock} adet mevcut` : 'Stok bilgisi yok';
+  const brand = escapeHTML(product.brand || formatCategory(product.category));
+
+  dom.detailBody.innerHTML = `
+    <div class="detail-layout">
+      <div class="detail-gallery">
+        <div class="detail-main-image"><img id="detailMainImage" src="${escapeHTML(mainImage)}" alt="${escapeHTML(product.title)}"></div>
+        <div class="detail-thumbnails">
+          ${images.map((image, index) => `
+            <button class="detail-thumb${image === mainImage ? ' active' : ''}" type="button" data-action="detail-image" data-image="${escapeHTML(image)}" aria-label="Ürün görseli ${index + 1}">
+              <img src="${escapeHTML(image)}" alt="" loading="lazy">
+            </button>
+          `).join('')}
+        </div>
+      </div>
+      <div class="detail-info">
+        <div class="detail-brand">${brand}</div>
+        <h2 class="detail-title">${escapeHTML(product.title)}</h2>
+        <div class="detail-rating"><span class="rating-star">★</span><strong>${rating ? rating.toFixed(1) : '—'}</strong><span>·</span><span>${escapeHTML(formatCategory(product.category))}</span></div>
+        <div class="detail-price">${formatMoney(product.price, 'USD')}<small> Fiyat</small></div>
+        <p class="detail-description">${escapeHTML(product.description || 'Bu ürün için açıklama sağlanmamış.')}</p>
+        <div class="detail-facts">
+          <div class="detail-fact"><span>Stok bilgisi</span><strong>${escapeHTML(stockLabel)}</strong></div>
+          <div class="detail-fact"><span>Marka</span><strong>${brand}</strong></div>
+          <div class="detail-fact"><span>Garanti</span><strong>${escapeHTML(product.warrantyInformation || 'Belirtilmemiş')}</strong></div>
+          <div class="detail-fact"><span>İade</span><strong>${escapeHTML(product.returnPolicy || 'Belirtilmemiş')}</strong></div>
+        </div>
+        <div class="detail-actions">
+          <button class="primary-button" type="button" data-action="add" data-id="${Number(product.id)}" ${Number(product.stock) > 0 ? '' : 'disabled'}>${svgIcon('bag')} Sepete ekle</button>
+          <button class="secondary-button" type="button" data-action="save" data-id="${Number(product.id)}">${svgIcon('heart')} ${saved ? 'Kaydedildi' : 'Kaydet'}</button>
+        </div>
+        <p class="demo-caption" style="text-align:left">Ürün açıklaması, stok ve puan bilgileri örnek ürün API'sinden gelir; satıcı veya stok garantisi değildir.</p>
+      </div>
+    </div>
+  `;
+}
+
+/* ================================================================
+   13. ADDRESS AUTOCOMPLETE — PHOTON / OPENSTREETMAP
+   ================================================================ */
+
+function addressLabel(properties) {
+  const parts = [
+    properties.name,
+    properties.housenumber && properties.street ? `${properties.housenumber} ${properties.street}` : properties.street,
+    properties.district,
+    properties.city,
+    properties.state,
+    properties.postcode,
+    properties.country
+  ].filter(Boolean);
+  return [...new Set(parts)].join(', ');
+}
+
+function debounceAddressSearch(input, resultsElement) {
+  window.clearTimeout(state.addressTimer);
+  const query = input.value.trim();
+  state.selectedAddress = null;
+  resultsElement.innerHTML = '';
+  resultsElement.hidden = true;
+  if (query.length < 3) return;
+
+  state.addressTimer = window.setTimeout(async () => {
+    const requestId = ++state.addressRequestId;
+    try {
+      const params = new URLSearchParams({
+        q: query,
+        limit: String(CONFIG.addressLimit),
+        lang: 'tr'
+      });
+      const data = await requestJSON(`${CONFIG.addressApi}?${params.toString()}`);
+      if (requestId !== state.addressRequestId) return;
+      const features = Array.isArray(data.features) ? data.features : [];
+      renderAddressSuggestions(features, input, resultsElement);
+    } catch (error) {
+      console.warn('Wuqi Store: adres önerileri alınamadı.', error);
+      resultsElement.innerHTML = '<div class="address-option"><strong>Öneriler şu an alınamadı</strong><span>Adresi elle yazmaya devam edebilirsin.</span></div>';
+      resultsElement.hidden = false;
+    }
+  }, CONFIG.addressDebounceMs);
+}
+
+function renderAddressSuggestions(features, input, resultsElement) {
+  if (!features.length) {
+    resultsElement.innerHTML = '<div class="address-option"><strong>Öneri bulunamadı</strong><span>Adresi elle yazabilirsin.</span></div>';
+    resultsElement.hidden = false;
+    return;
+  }
+
+  resultsElement.innerHTML = features.map((feature, index) => {
+    const properties = feature.properties || {};
+    const label = addressLabel(properties);
+    const subline = [properties.city, properties.state, properties.country].filter(Boolean).join(', ');
+    return `
+      <button class="address-option" type="button" data-action="choose-address" data-index="${index}">
+        <strong>${escapeHTML(properties.name || properties.street || properties.city || 'Adres önerisi')}</strong>
+        <span>${escapeHTML(label || subline)}</span>
+      </button>
+    `;
+  }).join('');
+  resultsElement._features = features;
+  resultsElement.hidden = false;
+}
+
+function chooseAddress(index, input, resultsElement) {
+  const feature = resultsElement._features?.[Number(index)];
+  if (!feature) return;
+  const properties = feature.properties || {};
+  const label = addressLabel(properties);
+  input.value = label;
+  state.selectedAddress = {
+    label,
+    properties,
+    coordinates: feature.geometry?.coordinates || null
+  };
+  resultsElement.hidden = true;
+  resultsElement.innerHTML = '';
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+/* ================================================================
+   14. CHECKOUT DEMO FLOW
+   ================================================================ */
+
+function openCheckout() {
+  const totals = getCartTotals();
+  if (!totals.items.length) {
+    showToast('Önce sepete ürün eklemelisin.', 'error');
+    return;
+  }
+  renderCheckoutForm(totals);
+  closeOverlay(dom.cartOverlay);
+  openOverlay(dom.checkoutOverlay);
+}
+
+function renderCheckoutForm(totals) {
+  dom.checkoutBody.innerHTML = `
+    <p class="checkout-intro"><strong>Site bilgilendirmesi:</strong> Ödeme İşlemleri</p>
+    <form class="checkout-form" id="checkoutForm" novalidate>
+      <div class="form-field">
+        <label for="deliveryName">Ad soyad (demo)</label>
+        <input id="deliveryName" name="name" autocomplete="name" placeholder="Örnek: Wuqi Kullanıcısı" maxlength="80" required>
+      </div>
+      <div class="form-field">
+        <label for="deliveryAddress">Adres</label>
+        <textarea id="deliveryAddress" name="address" autocomplete="street-address" placeholder="Adresini yaz veya önerilerden seç..." maxlength="320" required></textarea>
+        <div class="address-results" id="addressResults" hidden></div>
+        <span class="address-help">3 veya daha fazla karakter yazınca adres önerisi aranır. Öneri alamazsan adresi elle girebilirsin.</span>
+      </div>
+      <div class="form-grid-two">
+        <div class="form-field">
+          <label for="deliveryCity">Şehir (isteğe bağlı)</label>
+          <input id="deliveryCity" name="city" autocomplete="address-level2" placeholder="Şehir" maxlength="60">
+        </div>
+        <div class="form-field">
+          <label for="deliveryPostcode">Posta kodu (isteğe bağlı)</label>
+          <input id="deliveryPostcode" name="postcode" autocomplete="postal-code" placeholder="Posta kodu" maxlength="16">
+        </div>
+      </div>
+      <div class="checkout-total-box">
+        <div class="summary-line"><span>Ürün adedi</span><strong>${totals.quantity}</strong></div>
+        <div class="summary-line summary-total"><span>Demo toplamı</span><strong>${formatMoney(totals.subtotal, 'USD')}</strong></div>
+      </div>
+      <button class="primary-button full-button" type="submit">Demo sipariş özetini oluştur</button>
+      <p class="demo-caption">Kart numarası, banka bilgisi veya ödeme bilgisi istenmez.</p>
+    </form>
+  `;
+
+  const addressInput = document.getElementById('deliveryAddress');
+  const results = document.getElementById('addressResults');
+  addressInput.addEventListener('input', () => debounceAddressSearch(addressInput, results));
+  addressInput.addEventListener('focus', () => {
+    if (addressInput.value.trim().length >= 3) debounceAddressSearch(addressInput, results);
+  });
+}
+
+function submitDemoOrder(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const nameInput = form.elements.namedItem('name');
+  const addressInput = form.elements.namedItem('address');
+  const cityInput = form.elements.namedItem('city');
+  const postcodeInput = form.elements.namedItem('postcode');
+  const name = String(nameInput.value || '').trim();
+  const address = String(addressInput.value || '').trim();
+  if (name.length < 2) {
+    nameInput.focus();
+    showToast('Demo adı en az 2 karakter olmalı.', 'error');
+    return;
+  }
+  if (address.length < 5) {
+    addressInput.focus();
+    showToast('Lütfen geçerli bir demo adresi yaz.', 'error');
+    return;
+  }
+
+  const totals = getCartTotals();
+  const order = {
+    id: `WQ-${Date.now().toString(36).toUpperCase()}`,
+    createdAt: new Date().toISOString(),
+    items: totals.items.map(({ product, quantity }) => ({
+      id: Number(product.id),
+      title: product.title,
+      price: Number(product.price),
+      quantity
+    })),
+    itemCount: totals.quantity,
+    total: totals.subtotal,
+    currency: 'USD',
+    status: 'DEMO ONLY'
+  };
+  state.demoOrders.unshift(order);
+  state.demoOrders = state.demoOrders.slice(0, 20);
+  writeStorage(CONFIG.storageKeys.orders, state.demoOrders);
+
+  // The entered name/address are intentionally not persisted.
+  state.cart = [];
+  persistCart();
+  updateHeaderCounts();
+  renderCart();
+  const safeCity = escapeHTML(cityInput.value.trim());
+  const safePostcode = escapeHTML(postcodeInput.value.trim());
+  dom.checkoutBody.innerHTML = `
+    <div class="order-success">
+      <div class="success-mark">${svgIcon('check')}</div>
+      <h3>Demo tamamlandı.</h3>
+      <p>Özet kodun: <strong>${escapeHTML(order.id)}</strong></p>
+      <p>${escapeHTML(String(name))} için ${order.itemCount} ürünlük demo özeti oluşturuldu. ${safeCity ? `Şehir: ${safeCity}.` : ''} ${safePostcode ? `Posta kodu: ${safePostcode}.` : ''}</p>
+      <p>Bu kayıt yalnızca bu tarayıcıdaki demo geçmişinde bulunur. Gerçek sipariş, ödeme veya teslimat yapılmadı.</p>
+      <button class="primary-button full-button" type="button" id="checkoutDone">Mağazaya dön</button>
+    </div>
+  `;
+  showToast('Demo sipariş özeti oluşturuldu.');
+}
+
+/* ================================================================
+   15. EVENT DELEGATION
+   ================================================================ */
+
+function handleActionClick(event) {
+  const button = event.target.closest('[data-action]');
+  if (!button) return;
+  const action = button.dataset.action;
+  const id = Number(button.dataset.id);
+
+  switch (action) {
+    case 'detail':
+      openProductDetail(id);
+      break;
+    case 'save':
+      toggleSaved(id);
+      if (state.activeProduct && Number(state.activeProduct.id) === id && dom.detailOverlay.classList.contains('open')) {
+        renderProductDetail(state.activeProduct);
+      }
+      break;
+    case 'unsave':
+      toggleSaved(id);
+      break;
+    case 'add':
+      addToCart(id);
+      break;
+    case 'remove':
+      removeFromCart(id);
+      break;
+    case 'quantity':
+      changeCartQuantity(id, Number(button.dataset.delta));
+      break;
+    case 'all':
+      selectCategory('all');
+      break;
+    case 'retry':
+      loadProducts({ reset: true });
+      break;
+    case 'detail-image':
+      if (state.activeProduct) renderProductDetail(state.activeProduct, button.dataset.image);
+      break;
+    case 'choose-address': {
+      const results = button.closest('.address-results');
+      const input = document.getElementById('deliveryAddress');
+      if (results && input) chooseAddress(button.dataset.index, input, results);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+function handleCategoryClick(event) {
+  const button = event.target.closest('[data-category]');
+  if (!button) return;
+  selectCategory(button.dataset.category);
+}
+
+/* ================================================================
+   16. GLOBAL EVENT BINDINGS
+   ================================================================ */
+
+function bindEvents() {
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+  });
+
+  document.getElementById('savedOpen').addEventListener('click', () => {
+    renderSaved();
+    openOverlay(dom.savedOverlay);
+  });
+
+  document.getElementById('cartOpen').addEventListener('click', () => {
+    renderCart();
+    openOverlay(dom.cartOverlay);
+  });
+
+  document.getElementById('brandHome').addEventListener('click', goHome);
+  document.getElementById('footerHome').addEventListener('click', goHome);
+  document.getElementById('aboutDemo').addEventListener('click', () => openOverlay(dom.aboutOverlay));
+
+  dom.searchInput.addEventListener('input', handleSearchInput);
+  dom.searchClear.addEventListener('click', clearSearch);
+  dom.categoryList.addEventListener('click', handleCategoryClick);
+  dom.sortSelect.addEventListener('change', () => {
+    state.sort = dom.sortSelect.value;
+    loadProducts({ reset: true });
+  });
+
+  dom.productGrid.addEventListener('click', handleActionClick);
+  dom.detailBody.addEventListener('click', handleActionClick);
+  dom.cartContent.addEventListener('click', handleActionClick);
+  dom.savedContent.addEventListener('click', handleActionClick);
+  dom.cartFooter.addEventListener('click', (event) => {
+    if (event.target.closest('#checkoutStart')) openCheckout();
+  });
+
+  dom.checkoutBody.addEventListener('submit', (event) => {
+    if (event.target.id === 'checkoutForm') submitDemoOrder(event);
+  });
+  dom.checkoutBody.addEventListener('click', (event) => {
+    if (event.target.closest('#checkoutDone')) closeOverlay(dom.checkoutOverlay);
+  });
+
+  document.querySelectorAll('[data-close]').forEach((button) => {
+    button.addEventListener('click', () => closeOverlay(button.closest('.overlay, .drawer-overlay')));
+  });
+
+  [dom.detailOverlay, dom.aboutOverlay, dom.checkoutOverlay].forEach((overlay) => {
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) closeOverlay(overlay);
+    });
+  });
+
+  [dom.cartOverlay, dom.savedOverlay].forEach((overlay) => {
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) closeOverlay(overlay);
+    });
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      document.querySelectorAll('.overlay.open, .drawer-overlay.open').forEach(closeOverlay);
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      dom.searchInput.focus();
+      dom.searchInput.select();
+    }
+  });
+
+  dom.loadMoreButton.addEventListener('click', () => loadProducts());
+
+  window.addEventListener('scroll', () => {
+    dom.backToTop.classList.toggle('visible', window.scrollY > 650);
+  }, { passive: true });
+
+  dom.backToTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Infinite scroll keeps the manual button as a fallback for accessibility.
+  if ('IntersectionObserver' in window) {
+    state.observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry && entry.isIntersecting && state.hasMore && !state.loading) {
+        loadProducts();
+      }
+    }, { rootMargin: '650px 0px' });
+    state.observer.observe(dom.loadMoreWrap);
+  }
+}
+
+function goHome() {
+  state.search = '';
+  state.activeCategory = 'all';
+  dom.searchInput.value = '';
+  dom.searchClear.classList.remove('visible');
+  dom.sortSelect.value = 'default';
+  state.sort = 'default';
+  renderCategories();
+  loadProducts({ reset: true });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ================================================================
+   17. STARTUP
+   ================================================================ */
+
+async function hydrateStoredProducts() {
+  const storedIds = [
+    ...state.cart.map((item) => Number(item.id)),
+    ...state.saved.map(Number)
+  ];
+  const missingIds = [...new Set(storedIds)].filter((id) => id && !state.productMap.has(id));
+  await Promise.all(missingIds.map(async (id) => {
+    try {
+      const product = await requestJSON(`${CONFIG.productApi}/products/${id}`);
+      if (product && Number(product.id)) state.productMap.set(Number(product.id), product);
+    } catch (error) {
+      console.warn(`Wuqi Store: kayıtlı ürün ${id} yenilenemedi.`, error);
+    }
+  }));
+  renderCart();
+  updateHeaderCounts();
+  if (dom.savedOverlay.classList.contains('open')) renderSaved();
+}
+
+async function init() {
+  document.getElementById('yearNow').textContent = String(new Date().getFullYear());
+  applyTheme(state.theme, false);
+  updateHeaderCounts();
+  renderCart();
+  bindEvents();
+  await Promise.allSettled([
+    loadCategories(),
+    loadProducts({ reset: true }),
+    hydrateStoredProducts()
+  ]);
+  renderCart();
+}
+
+init();
+</script>
+<!--
+ * WUQI STORE — MAINTENANCE AND MANUAL QA NOTES
+ * [API LOAD 001] Verify first catalogue load; expected behavior: the page shows a clear loading state.
+ * [API LOAD 002] Verify a later catalogue page; expected behavior: the request is ignored if superseded.
+ * [API LOAD 003] Verify an empty products response; expected behavior: no duplicate product card is added.
+ * [API LOAD 004] Verify an API timeout; expected behavior: the visitor can retry without refreshing.
+ * [API LOAD 005] Verify an HTTP error; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 006] Verify a response with no products key; expected behavior: the page shows a clear loading state.
+ * [API LOAD 007] Verify a response with a non-array products value; expected behavior: the request is ignored if superseded.
+ * [API LOAD 008] Verify a slow network; expected behavior: no duplicate product card is added.
+ * [API LOAD 009] Verify a repeated product ID; expected behavior: the visitor can retry without refreshing.
+ * [API LOAD 010] Verify a restored browser session; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 011] Verify first catalogue load; expected behavior: the request is ignored if superseded.
+ * [API LOAD 012] Verify a later catalogue page; expected behavior: no duplicate product card is added.
+ * [API LOAD 013] Verify an empty products response; expected behavior: the visitor can retry without refreshing.
+ * [API LOAD 014] Verify an API timeout; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 015] Verify an HTTP error; expected behavior: the page shows a clear loading state.
+ * [API LOAD 016] Verify a response with no products key; expected behavior: the request is ignored if superseded.
+ * [API LOAD 017] Verify a response with a non-array products value; expected behavior: no duplicate product card is added.
+ * [API LOAD 018] Verify a slow network; expected behavior: the visitor can retry without refreshing.
+ * [API LOAD 019] Verify a repeated product ID; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 020] Verify a restored browser session; expected behavior: the page shows a clear loading state.
+ * [API LOAD 021] Verify first catalogue load; expected behavior: no duplicate product card is added.
+ * [API LOAD 022] Verify a later catalogue page; expected behavior: the visitor can retry without refreshing.
+ * [API LOAD 023] Verify an empty products response; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 024] Verify an API timeout; expected behavior: the page shows a clear loading state.
+ * [API LOAD 025] Verify an HTTP error; expected behavior: the request is ignored if superseded.
+ * [API LOAD 026] Verify a response with no products key; expected behavior: no duplicate product card is added.
+ * [API LOAD 027] Verify a response with a non-array products value; expected behavior: the visitor can retry without refreshing.
+ * [API LOAD 028] Verify a slow network; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 029] Verify a repeated product ID; expected behavior: the page shows a clear loading state.
+ * [API LOAD 030] Verify a restored browser session; expected behavior: the request is ignored if superseded.
+ * [API LOAD 031] Verify first catalogue load; expected behavior: the visitor can retry without refreshing.
+ * [API LOAD 032] Verify a later catalogue page; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 033] Verify an empty products response; expected behavior: the page shows a clear loading state.
+ * [API LOAD 034] Verify an API timeout; expected behavior: the request is ignored if superseded.
+ * [API LOAD 035] Verify an HTTP error; expected behavior: no duplicate product card is added.
+ * [API LOAD 036] Verify a response with no products key; expected behavior: the visitor can retry without refreshing.
+ * [API LOAD 037] Verify a response with a non-array products value; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 038] Verify a slow network; expected behavior: the page shows a clear loading state.
+ * [API LOAD 039] Verify a repeated product ID; expected behavior: the request is ignored if superseded.
+ * [API LOAD 040] Verify a restored browser session; expected behavior: no duplicate product card is added.
+ * [API LOAD 041] Verify first catalogue load; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 042] Verify a later catalogue page; expected behavior: the page shows a clear loading state.
+ * [API LOAD 043] Verify an empty products response; expected behavior: the request is ignored if superseded.
+ * [API LOAD 044] Verify an API timeout; expected behavior: no duplicate product card is added.
+ * [API LOAD 045] Verify an HTTP error; expected behavior: the visitor can retry without refreshing.
+ * [API LOAD 046] Verify a response with no products key; expected behavior: the visible count reflects returned API totals.
+ * [API LOAD 047] Verify a response with a non-array products value; expected behavior: the page shows a clear loading state.
+ * [API LOAD 048] Verify a slow network; expected behavior: the request is ignored if superseded.
+ * [API LOAD 049] Verify a repeated product ID; expected behavior: no duplicate product card is added.
+ * [API LOAD 050] Verify a restored browser session; expected behavior: the visitor can retry without refreshing.
+ * [SEARCH 001] Verify a three-character query; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 002] Verify a query containing spaces; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 003] Verify a query with Turkish characters; expected behavior: the input remains editable while results update.
+ * [SEARCH 004] Verify a query with punctuation; expected behavior: the empty state offers a way back to the catalogue.
+ * [SEARCH 005] Verify a query that matches nothing; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 006] Verify a query changed during an active request; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 007] Verify a query cleared with the clear control; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 008] Verify a query submitted after category selection; expected behavior: the input remains editable while results update.
+ * [SEARCH 009] Verify a query while a later page is loading; expected behavior: the empty state offers a way back to the catalogue.
+ * [SEARCH 010] Verify a query restored after returning from a dialog; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 011] Verify a three-character query; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 012] Verify a query containing spaces; expected behavior: the input remains editable while results update.
+ * [SEARCH 013] Verify a query with Turkish characters; expected behavior: the empty state offers a way back to the catalogue.
+ * [SEARCH 014] Verify a query with punctuation; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 015] Verify a query that matches nothing; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 016] Verify a query changed during an active request; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 017] Verify a query cleared with the clear control; expected behavior: the input remains editable while results update.
+ * [SEARCH 018] Verify a query submitted after category selection; expected behavior: the empty state offers a way back to the catalogue.
+ * [SEARCH 019] Verify a query while a later page is loading; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 020] Verify a query restored after returning from a dialog; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 021] Verify a three-character query; expected behavior: the input remains editable while results update.
+ * [SEARCH 022] Verify a query containing spaces; expected behavior: the empty state offers a way back to the catalogue.
+ * [SEARCH 023] Verify a query with Turkish characters; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 024] Verify a query with punctuation; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 025] Verify a query that matches nothing; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 026] Verify a query changed during an active request; expected behavior: the input remains editable while results update.
+ * [SEARCH 027] Verify a query cleared with the clear control; expected behavior: the empty state offers a way back to the catalogue.
+ * [SEARCH 028] Verify a query submitted after category selection; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 029] Verify a query while a later page is loading; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 030] Verify a query restored after returning from a dialog; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 031] Verify a three-character query; expected behavior: the empty state offers a way back to the catalogue.
+ * [SEARCH 032] Verify a query containing spaces; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 033] Verify a query with Turkish characters; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 034] Verify a query with punctuation; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 035] Verify a query that matches nothing; expected behavior: the input remains editable while results update.
+ * [SEARCH 036] Verify a query changed during an active request; expected behavior: the empty state offers a way back to the catalogue.
+ * [SEARCH 037] Verify a query cleared with the clear control; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 038] Verify a query submitted after category selection; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 039] Verify a query while a later page is loading; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 040] Verify a query restored after returning from a dialog; expected behavior: the input remains editable while results update.
+ * [SEARCH 041] Verify a three-character query; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 042] Verify a query containing spaces; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 043] Verify a query with Turkish characters; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 044] Verify a query with punctuation; expected behavior: the input remains editable while results update.
+ * [SEARCH 045] Verify a query that matches nothing; expected behavior: the empty state offers a way back to the catalogue.
+ * [SEARCH 046] Verify a query changed during an active request; expected behavior: the clear control disappears when the field is empty.
+ * [SEARCH 047] Verify a query cleared with the clear control; expected behavior: the DummyJSON search endpoint is used.
+ * [SEARCH 048] Verify a query submitted after category selection; expected behavior: the previous response cannot overwrite newer results.
+ * [SEARCH 049] Verify a query while a later page is loading; expected behavior: the input remains editable while results update.
+ * [SEARCH 050] Verify a query restored after returning from a dialog; expected behavior: the empty state offers a way back to the catalogue.
+ * [SORTING 001] Verify price ascending; expected behavior: the sort is requested from the API.
+ * [SORTING 002] Verify price descending; expected behavior: the current result set is reset before loading.
+ * [SORTING 003] Verify rating descending; expected behavior: the displayed order matches the selected option.
+ * [SORTING 004] Verify title ascending; expected behavior: the selected option remains visible.
+ * [SORTING 005] Verify the default source order; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 006] Verify a sort change during pagination; expected behavior: the sort is requested from the API.
+ * [SORTING 007] Verify a sort change after searching; expected behavior: the current result set is reset before loading.
+ * [SORTING 008] Verify a sort change inside a category; expected behavior: the displayed order matches the selected option.
+ * [SORTING 009] Verify a sort change after loading several pages; expected behavior: the selected option remains visible.
+ * [SORTING 010] Verify a sort change followed by clearing search; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 011] Verify price ascending; expected behavior: the current result set is reset before loading.
+ * [SORTING 012] Verify price descending; expected behavior: the displayed order matches the selected option.
+ * [SORTING 013] Verify rating descending; expected behavior: the selected option remains visible.
+ * [SORTING 014] Verify title ascending; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 015] Verify the default source order; expected behavior: the sort is requested from the API.
+ * [SORTING 016] Verify a sort change during pagination; expected behavior: the current result set is reset before loading.
+ * [SORTING 017] Verify a sort change after searching; expected behavior: the displayed order matches the selected option.
+ * [SORTING 018] Verify a sort change inside a category; expected behavior: the selected option remains visible.
+ * [SORTING 019] Verify a sort change after loading several pages; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 020] Verify a sort change followed by clearing search; expected behavior: the sort is requested from the API.
+ * [SORTING 021] Verify price ascending; expected behavior: the displayed order matches the selected option.
+ * [SORTING 022] Verify price descending; expected behavior: the selected option remains visible.
+ * [SORTING 023] Verify rating descending; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 024] Verify title ascending; expected behavior: the sort is requested from the API.
+ * [SORTING 025] Verify the default source order; expected behavior: the current result set is reset before loading.
+ * [SORTING 026] Verify a sort change during pagination; expected behavior: the displayed order matches the selected option.
+ * [SORTING 027] Verify a sort change after searching; expected behavior: the selected option remains visible.
+ * [SORTING 028] Verify a sort change inside a category; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 029] Verify a sort change after loading several pages; expected behavior: the sort is requested from the API.
+ * [SORTING 030] Verify a sort change followed by clearing search; expected behavior: the current result set is reset before loading.
+ * [SORTING 031] Verify price ascending; expected behavior: the selected option remains visible.
+ * [SORTING 032] Verify price descending; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 033] Verify rating descending; expected behavior: the sort is requested from the API.
+ * [SORTING 034] Verify title ascending; expected behavior: the current result set is reset before loading.
+ * [SORTING 035] Verify the default source order; expected behavior: the displayed order matches the selected option.
+ * [SORTING 036] Verify a sort change during pagination; expected behavior: the selected option remains visible.
+ * [SORTING 037] Verify a sort change after searching; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 038] Verify a sort change inside a category; expected behavior: the sort is requested from the API.
+ * [SORTING 039] Verify a sort change after loading several pages; expected behavior: the current result set is reset before loading.
+ * [SORTING 040] Verify a sort change followed by clearing search; expected behavior: the displayed order matches the selected option.
+ * [SORTING 041] Verify price ascending; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 042] Verify price descending; expected behavior: the sort is requested from the API.
+ * [SORTING 043] Verify rating descending; expected behavior: the current result set is reset before loading.
+ * [SORTING 044] Verify title ascending; expected behavior: the displayed order matches the selected option.
+ * [SORTING 045] Verify the default source order; expected behavior: the selected option remains visible.
+ * [SORTING 046] Verify a sort change during pagination; expected behavior: pagination continues from the sorted API sequence.
+ * [SORTING 047] Verify a sort change after searching; expected behavior: the sort is requested from the API.
+ * [SORTING 048] Verify a sort change inside a category; expected behavior: the current result set is reset before loading.
+ * [SORTING 049] Verify a sort change after loading several pages; expected behavior: the displayed order matches the selected option.
+ * [SORTING 050] Verify a sort change followed by clearing search; expected behavior: the selected option remains visible.
+ * [CATEGORIES 001] Verify the initial category list; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 002] Verify the all-products category; expected behavior: search text is cleared.
+ * [CATEGORIES 003] Verify a category with a hyphenated slug; expected behavior: the category endpoint is used.
+ * [CATEGORIES 004] Verify a category with no matching products; expected behavior: the catalog heading is updated.
+ * [CATEGORIES 005] Verify a category selected after search; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 006] Verify a category selected while loading; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 007] Verify a category selected after sorting; expected behavior: search text is cleared.
+ * [CATEGORIES 008] Verify a failed category endpoint; expected behavior: the category endpoint is used.
+ * [CATEGORIES 009] Verify a restored category button state; expected behavior: the catalog heading is updated.
+ * [CATEGORIES 010] Verify a long category name on mobile; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 011] Verify the initial category list; expected behavior: search text is cleared.
+ * [CATEGORIES 012] Verify the all-products category; expected behavior: the category endpoint is used.
+ * [CATEGORIES 013] Verify a category with a hyphenated slug; expected behavior: the catalog heading is updated.
+ * [CATEGORIES 014] Verify a category with no matching products; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 015] Verify a category selected after search; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 016] Verify a category selected while loading; expected behavior: search text is cleared.
+ * [CATEGORIES 017] Verify a category selected after sorting; expected behavior: the category endpoint is used.
+ * [CATEGORIES 018] Verify a failed category endpoint; expected behavior: the catalog heading is updated.
+ * [CATEGORIES 019] Verify a restored category button state; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 020] Verify a long category name on mobile; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 021] Verify the initial category list; expected behavior: the category endpoint is used.
+ * [CATEGORIES 022] Verify the all-products category; expected behavior: the catalog heading is updated.
+ * [CATEGORIES 023] Verify a category with a hyphenated slug; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 024] Verify a category with no matching products; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 025] Verify a category selected after search; expected behavior: search text is cleared.
+ * [CATEGORIES 026] Verify a category selected while loading; expected behavior: the category endpoint is used.
+ * [CATEGORIES 027] Verify a category selected after sorting; expected behavior: the catalog heading is updated.
+ * [CATEGORIES 028] Verify a failed category endpoint; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 029] Verify a restored category button state; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 030] Verify a long category name on mobile; expected behavior: search text is cleared.
+ * [CATEGORIES 031] Verify the initial category list; expected behavior: the catalog heading is updated.
+ * [CATEGORIES 032] Verify the all-products category; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 033] Verify a category with a hyphenated slug; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 034] Verify a category with no matching products; expected behavior: search text is cleared.
+ * [CATEGORIES 035] Verify a category selected after search; expected behavior: the category endpoint is used.
+ * [CATEGORIES 036] Verify a category selected while loading; expected behavior: the catalog heading is updated.
+ * [CATEGORIES 037] Verify a category selected after sorting; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 038] Verify a failed category endpoint; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 039] Verify a restored category button state; expected behavior: search text is cleared.
+ * [CATEGORIES 040] Verify a long category name on mobile; expected behavior: the category endpoint is used.
+ * [CATEGORIES 041] Verify the initial category list; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 042] Verify the all-products category; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 043] Verify a category with a hyphenated slug; expected behavior: search text is cleared.
+ * [CATEGORIES 044] Verify a category with no matching products; expected behavior: the category endpoint is used.
+ * [CATEGORIES 045] Verify a category selected after search; expected behavior: the catalog heading is updated.
+ * [CATEGORIES 046] Verify a category selected while loading; expected behavior: the category strip remains horizontally scrollable.
+ * [CATEGORIES 047] Verify a category selected after sorting; expected behavior: the selected chip receives active styling.
+ * [CATEGORIES 048] Verify a failed category endpoint; expected behavior: search text is cleared.
+ * [CATEGORIES 049] Verify a restored category button state; expected behavior: the category endpoint is used.
+ * [CATEGORIES 050] Verify a long category name on mobile; expected behavior: the catalog heading is updated.
+ * [PRODUCT CARD 001] Verify a product with a brand value; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 002] Verify a product without a brand value; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 003] Verify a product with a thumbnail; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 004] Verify a product with only gallery images; expected behavior: the save control reflects current saved state.
+ * [PRODUCT CARD 005] Verify an image that fails to load; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 006] Verify a product with no rating; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 007] Verify a product with a zero rating; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 008] Verify a product with available stock; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 009] Verify a product with zero stock; expected behavior: the save control reflects current saved state.
+ * [PRODUCT CARD 010] Verify a long product title; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 011] Verify a product with a brand value; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 012] Verify a product without a brand value; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 013] Verify a product with a thumbnail; expected behavior: the save control reflects current saved state.
+ * [PRODUCT CARD 014] Verify a product with only gallery images; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 015] Verify an image that fails to load; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 016] Verify a product with no rating; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 017] Verify a product with a zero rating; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 018] Verify a product with available stock; expected behavior: the save control reflects current saved state.
+ * [PRODUCT CARD 019] Verify a product with zero stock; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 020] Verify a long product title; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 021] Verify a product with a brand value; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 022] Verify a product without a brand value; expected behavior: the save control reflects current saved state.
+ * [PRODUCT CARD 023] Verify a product with a thumbnail; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 024] Verify a product with only gallery images; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 025] Verify an image that fails to load; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 026] Verify a product with no rating; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 027] Verify a product with a zero rating; expected behavior: the save control reflects current saved state.
+ * [PRODUCT CARD 028] Verify a product with available stock; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 029] Verify a product with zero stock; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 030] Verify a long product title; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 031] Verify a product with a brand value; expected behavior: the save control reflects current saved state.
+ * [PRODUCT CARD 032] Verify a product without a brand value; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 033] Verify a product with a thumbnail; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 034] Verify a product with only gallery images; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 035] Verify an image that fails to load; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 036] Verify a product with no rating; expected behavior: the save control reflects current saved state.
+ * [PRODUCT CARD 037] Verify a product with a zero rating; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 038] Verify a product with available stock; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 039] Verify a product with zero stock; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 040] Verify a long product title; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 041] Verify a product with a brand value; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 042] Verify a product without a brand value; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 043] Verify a product with a thumbnail; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 044] Verify a product with only gallery images; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 045] Verify an image that fails to load; expected behavior: the save control reflects current saved state.
+ * [PRODUCT CARD 046] Verify a product with no rating; expected behavior: the add control respects API stock.
+ * [PRODUCT CARD 047] Verify a product with a zero rating; expected behavior: the card layout remains aligned.
+ * [PRODUCT CARD 048] Verify a product with available stock; expected behavior: the product name is escaped before rendering.
+ * [PRODUCT CARD 049] Verify a product with zero stock; expected behavior: the card remains usable at two columns.
+ * [PRODUCT CARD 050] Verify a long product title; expected behavior: the save control reflects current saved state.
+ * [PRODUCT DETAIL 001] Verify opening a card image; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 002] Verify opening a product title; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 003] Verify switching a gallery thumbnail; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 004] Verify a product without gallery images; expected behavior: the selected product stays associated with the dialog.
+ * [PRODUCT DETAIL 005] Verify a product with no warranty field; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 006] Verify a product with a long description; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 007] Verify a product with zero stock; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 008] Verify saving from the detail view; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 009] Verify adding from the detail view; expected behavior: the selected product stays associated with the dialog.
+ * [PRODUCT DETAIL 010] Verify closing with the close control; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 011] Verify opening a card image; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 012] Verify opening a product title; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 013] Verify switching a gallery thumbnail; expected behavior: the selected product stays associated with the dialog.
+ * [PRODUCT DETAIL 014] Verify a product without gallery images; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 015] Verify a product with no warranty field; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 016] Verify a product with a long description; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 017] Verify a product with zero stock; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 018] Verify saving from the detail view; expected behavior: the selected product stays associated with the dialog.
+ * [PRODUCT DETAIL 019] Verify adding from the detail view; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 020] Verify closing with the close control; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 021] Verify opening a card image; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 022] Verify opening a product title; expected behavior: the selected product stays associated with the dialog.
+ * [PRODUCT DETAIL 023] Verify switching a gallery thumbnail; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 024] Verify a product without gallery images; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 025] Verify a product with no warranty field; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 026] Verify a product with a long description; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 027] Verify a product with zero stock; expected behavior: the selected product stays associated with the dialog.
+ * [PRODUCT DETAIL 028] Verify saving from the detail view; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 029] Verify adding from the detail view; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 030] Verify closing with the close control; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 031] Verify opening a card image; expected behavior: the selected product stays associated with the dialog.
+ * [PRODUCT DETAIL 032] Verify opening a product title; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 033] Verify switching a gallery thumbnail; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 034] Verify a product without gallery images; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 035] Verify a product with no warranty field; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 036] Verify a product with a long description; expected behavior: the selected product stays associated with the dialog.
+ * [PRODUCT DETAIL 037] Verify a product with zero stock; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 038] Verify saving from the detail view; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 039] Verify adding from the detail view; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 040] Verify closing with the close control; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 041] Verify opening a card image; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 042] Verify opening a product title; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 043] Verify switching a gallery thumbnail; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 044] Verify a product without gallery images; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 045] Verify a product with no warranty field; expected behavior: the selected product stays associated with the dialog.
+ * [PRODUCT DETAIL 046] Verify a product with a long description; expected behavior: the visitor can return to the same catalogue position.
+ * [PRODUCT DETAIL 047] Verify a product with zero stock; expected behavior: the detail dialog displays current product data.
+ * [PRODUCT DETAIL 048] Verify saving from the detail view; expected behavior: the selected image is updated.
+ * [PRODUCT DETAIL 049] Verify adding from the detail view; expected behavior: missing values receive a neutral fallback.
+ * [PRODUCT DETAIL 050] Verify closing with the close control; expected behavior: the selected product stays associated with the dialog.
+ * [SAVED ITEMS 001] Verify saving a product once; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 002] Verify saving a product a second time; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 003] Verify removing a saved product; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 004] Verify opening an empty saved list; expected behavior: the drawer content is refreshed.
+ * [SAVED ITEMS 005] Verify opening a populated saved list; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 006] Verify saving from the product detail; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 007] Verify removing from the saved drawer; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 008] Verify a saved product outside the first page; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 009] Verify a browser reload with saved items; expected behavior: the drawer content is refreshed.
+ * [SAVED ITEMS 010] Verify a saved item no longer available in the API; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 011] Verify saving a product once; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 012] Verify saving a product a second time; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 013] Verify removing a saved product; expected behavior: the drawer content is refreshed.
+ * [SAVED ITEMS 014] Verify opening an empty saved list; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 015] Verify opening a populated saved list; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 016] Verify saving from the product detail; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 017] Verify removing from the saved drawer; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 018] Verify a saved product outside the first page; expected behavior: the drawer content is refreshed.
+ * [SAVED ITEMS 019] Verify a browser reload with saved items; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 020] Verify a saved item no longer available in the API; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 021] Verify saving a product once; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 022] Verify saving a product a second time; expected behavior: the drawer content is refreshed.
+ * [SAVED ITEMS 023] Verify removing a saved product; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 024] Verify opening an empty saved list; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 025] Verify opening a populated saved list; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 026] Verify saving from the product detail; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 027] Verify removing from the saved drawer; expected behavior: the drawer content is refreshed.
+ * [SAVED ITEMS 028] Verify a saved product outside the first page; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 029] Verify a browser reload with saved items; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 030] Verify a saved item no longer available in the API; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 031] Verify saving a product once; expected behavior: the drawer content is refreshed.
+ * [SAVED ITEMS 032] Verify saving a product a second time; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 033] Verify removing a saved product; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 034] Verify opening an empty saved list; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 035] Verify opening a populated saved list; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 036] Verify saving from the product detail; expected behavior: the drawer content is refreshed.
+ * [SAVED ITEMS 037] Verify removing from the saved drawer; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 038] Verify a saved product outside the first page; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 039] Verify a browser reload with saved items; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 040] Verify a saved item no longer available in the API; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 041] Verify saving a product once; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 042] Verify saving a product a second time; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 043] Verify removing a saved product; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 044] Verify opening an empty saved list; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 045] Verify opening a populated saved list; expected behavior: the drawer content is refreshed.
+ * [SAVED ITEMS 046] Verify saving from the product detail; expected behavior: the empty state explains how to save products.
+ * [SAVED ITEMS 047] Verify removing from the saved drawer; expected behavior: the saved count is refreshed.
+ * [SAVED ITEMS 048] Verify a saved product outside the first page; expected behavior: the local browser record is updated.
+ * [SAVED ITEMS 049] Verify a browser reload with saved items; expected behavior: duplicate saved IDs are not introduced.
+ * [SAVED ITEMS 050] Verify a saved item no longer available in the API; expected behavior: the drawer content is refreshed.
+ * [CART 001] Verify adding a product once; expected behavior: the cart badge displays total units.
+ * [CART 002] Verify adding the same product again; expected behavior: the quantity stays within the API stock value.
+ * [CART 003] Verify increasing quantity; expected behavior: the line total uses source API price.
+ * [CART 004] Verify decreasing quantity; expected behavior: the subtotal is recalculated.
+ * [CART 005] Verify decreasing quantity to zero; expected behavior: the cart is saved in localStorage.
+ * [CART 006] Verify removing a cart row; expected behavior: the cart badge displays total units.
+ * [CART 007] Verify adding at the API stock limit; expected behavior: the quantity stays within the API stock value.
+ * [CART 008] Verify adding beyond API stock; expected behavior: the line total uses source API price.
+ * [CART 009] Verify opening an empty cart; expected behavior: the subtotal is recalculated.
+ * [CART 010] Verify reloading with a populated cart; expected behavior: the cart is saved in localStorage.
+ * [CART 011] Verify adding a product once; expected behavior: the quantity stays within the API stock value.
+ * [CART 012] Verify adding the same product again; expected behavior: the line total uses source API price.
+ * [CART 013] Verify increasing quantity; expected behavior: the subtotal is recalculated.
+ * [CART 014] Verify decreasing quantity; expected behavior: the cart is saved in localStorage.
+ * [CART 015] Verify decreasing quantity to zero; expected behavior: the cart badge displays total units.
+ * [CART 016] Verify removing a cart row; expected behavior: the quantity stays within the API stock value.
+ * [CART 017] Verify adding at the API stock limit; expected behavior: the line total uses source API price.
+ * [CART 018] Verify adding beyond API stock; expected behavior: the subtotal is recalculated.
+ * [CART 019] Verify opening an empty cart; expected behavior: the cart is saved in localStorage.
+ * [CART 020] Verify reloading with a populated cart; expected behavior: the cart badge displays total units.
+ * [CART 021] Verify adding a product once; expected behavior: the line total uses source API price.
+ * [CART 022] Verify adding the same product again; expected behavior: the subtotal is recalculated.
+ * [CART 023] Verify increasing quantity; expected behavior: the cart is saved in localStorage.
+ * [CART 024] Verify decreasing quantity; expected behavior: the cart badge displays total units.
+ * [CART 025] Verify decreasing quantity to zero; expected behavior: the quantity stays within the API stock value.
+ * [CART 026] Verify removing a cart row; expected behavior: the line total uses source API price.
+ * [CART 027] Verify adding at the API stock limit; expected behavior: the subtotal is recalculated.
+ * [CART 028] Verify adding beyond API stock; expected behavior: the cart is saved in localStorage.
+ * [CART 029] Verify opening an empty cart; expected behavior: the cart badge displays total units.
+ * [CART 030] Verify reloading with a populated cart; expected behavior: the quantity stays within the API stock value.
+ * [CART 031] Verify adding a product once; expected behavior: the subtotal is recalculated.
+ * [CART 032] Verify adding the same product again; expected behavior: the cart is saved in localStorage.
+ * [CART 033] Verify increasing quantity; expected behavior: the cart badge displays total units.
+ * [CART 034] Verify decreasing quantity; expected behavior: the quantity stays within the API stock value.
+ * [CART 035] Verify decreasing quantity to zero; expected behavior: the line total uses source API price.
+ * [CART 036] Verify removing a cart row; expected behavior: the subtotal is recalculated.
+ * [CART 037] Verify adding at the API stock limit; expected behavior: the cart is saved in localStorage.
+ * [CART 038] Verify adding beyond API stock; expected behavior: the cart badge displays total units.
+ * [CART 039] Verify opening an empty cart; expected behavior: the quantity stays within the API stock value.
+ * [CART 040] Verify reloading with a populated cart; expected behavior: the line total uses source API price.
+ * [CART 041] Verify adding a product once; expected behavior: the cart is saved in localStorage.
+ * [CART 042] Verify adding the same product again; expected behavior: the cart badge displays total units.
+ * [CART 043] Verify increasing quantity; expected behavior: the quantity stays within the API stock value.
+ * [CART 044] Verify decreasing quantity; expected behavior: the line total uses source API price.
+ * [CART 045] Verify decreasing quantity to zero; expected behavior: the subtotal is recalculated.
+ * [CART 046] Verify removing a cart row; expected behavior: the cart is saved in localStorage.
+ * [CART 047] Verify adding at the API stock limit; expected behavior: the cart badge displays total units.
+ * [CART 048] Verify adding beyond API stock; expected behavior: the quantity stays within the API stock value.
+ * [CART 049] Verify opening an empty cart; expected behavior: the line total uses source API price.
+ * [CART 050] Verify reloading with a populated cart; expected behavior: the subtotal is recalculated.
+ * [CHECKOUT DEMO 001] Verify opening checkout with an empty cart; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 002] Verify opening checkout with products; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 003] Verify submitting an empty name; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 004] Verify submitting a short name; expected behavior: a local demo reference is generated.
+ * [CHECKOUT DEMO 005] Verify submitting an empty address; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 006] Verify submitting a short address; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 007] Verify submitting valid demo details; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 008] Verify finishing a demo summary; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 009] Verify checking cart after completion; expected behavior: a local demo reference is generated.
+ * [CHECKOUT DEMO 010] Verify reloading after a demo summary; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 011] Verify opening checkout with an empty cart; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 012] Verify opening checkout with products; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 013] Verify submitting an empty name; expected behavior: a local demo reference is generated.
+ * [CHECKOUT DEMO 014] Verify submitting a short name; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 015] Verify submitting an empty address; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 016] Verify submitting a short address; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 017] Verify submitting valid demo details; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 018] Verify finishing a demo summary; expected behavior: a local demo reference is generated.
+ * [CHECKOUT DEMO 019] Verify checking cart after completion; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 020] Verify reloading after a demo summary; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 021] Verify opening checkout with an empty cart; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 022] Verify opening checkout with products; expected behavior: a local demo reference is generated.
+ * [CHECKOUT DEMO 023] Verify submitting an empty name; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 024] Verify submitting a short name; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 025] Verify submitting an empty address; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 026] Verify submitting a short address; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 027] Verify submitting valid demo details; expected behavior: a local demo reference is generated.
+ * [CHECKOUT DEMO 028] Verify finishing a demo summary; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 029] Verify checking cart after completion; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 030] Verify reloading after a demo summary; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 031] Verify opening checkout with an empty cart; expected behavior: a local demo reference is generated.
+ * [CHECKOUT DEMO 032] Verify opening checkout with products; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 033] Verify submitting an empty name; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 034] Verify submitting a short name; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 035] Verify submitting an empty address; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 036] Verify submitting a short address; expected behavior: a local demo reference is generated.
+ * [CHECKOUT DEMO 037] Verify submitting valid demo details; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 038] Verify finishing a demo summary; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 039] Verify checking cart after completion; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 040] Verify reloading after a demo summary; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 041] Verify opening checkout with an empty cart; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 042] Verify opening checkout with products; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 043] Verify submitting an empty name; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 044] Verify submitting a short name; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 045] Verify submitting an empty address; expected behavior: a local demo reference is generated.
+ * [CHECKOUT DEMO 046] Verify submitting a short address; expected behavior: the cart is cleared only after the demo summary is created.
+ * [CHECKOUT DEMO 047] Verify submitting valid demo details; expected behavior: no payment fields are displayed.
+ * [CHECKOUT DEMO 048] Verify finishing a demo summary; expected behavior: the visitor is told the flow is a demo.
+ * [CHECKOUT DEMO 049] Verify checking cart after completion; expected behavior: invalid fields receive a clear message.
+ * [CHECKOUT DEMO 050] Verify reloading after a demo summary; expected behavior: a local demo reference is generated.
+ * [ADDRESS LOOKUP 001] Verify typing one character; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 002] Verify typing two characters; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 003] Verify typing three characters; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 004] Verify typing a longer address; expected behavior: the selected result fills the address field.
+ * [ADDRESS LOOKUP 005] Verify choosing an address suggestion; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 006] Verify editing a selected suggestion; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 007] Verify receiving no address suggestions; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 008] Verify a Photon request timing out; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 009] Verify a Photon response with no features; expected behavior: the selected result fills the address field.
+ * [ADDRESS LOOKUP 010] Verify entering an address manually; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 011] Verify typing one character; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 012] Verify typing two characters; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 013] Verify typing three characters; expected behavior: the selected result fills the address field.
+ * [ADDRESS LOOKUP 014] Verify typing a longer address; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 015] Verify choosing an address suggestion; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 016] Verify editing a selected suggestion; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 017] Verify receiving no address suggestions; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 018] Verify a Photon request timing out; expected behavior: the selected result fills the address field.
+ * [ADDRESS LOOKUP 019] Verify a Photon response with no features; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 020] Verify entering an address manually; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 021] Verify typing one character; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 022] Verify typing two characters; expected behavior: the selected result fills the address field.
+ * [ADDRESS LOOKUP 023] Verify typing three characters; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 024] Verify typing a longer address; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 025] Verify choosing an address suggestion; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 026] Verify editing a selected suggestion; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 027] Verify receiving no address suggestions; expected behavior: the selected result fills the address field.
+ * [ADDRESS LOOKUP 028] Verify a Photon request timing out; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 029] Verify a Photon response with no features; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 030] Verify entering an address manually; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 031] Verify typing one character; expected behavior: the selected result fills the address field.
+ * [ADDRESS LOOKUP 032] Verify typing two characters; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 033] Verify typing three characters; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 034] Verify typing a longer address; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 035] Verify choosing an address suggestion; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 036] Verify editing a selected suggestion; expected behavior: the selected result fills the address field.
+ * [ADDRESS LOOKUP 037] Verify receiving no address suggestions; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 038] Verify a Photon request timing out; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 039] Verify a Photon response with no features; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 040] Verify entering an address manually; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 041] Verify typing one character; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 042] Verify typing two characters; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 043] Verify typing three characters; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 044] Verify typing a longer address; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 045] Verify choosing an address suggestion; expected behavior: the selected result fills the address field.
+ * [ADDRESS LOOKUP 046] Verify editing a selected suggestion; expected behavior: the user is informed that the query goes to Photon.
+ * [ADDRESS LOOKUP 047] Verify receiving no address suggestions; expected behavior: short queries do not trigger a request.
+ * [ADDRESS LOOKUP 048] Verify a Photon request timing out; expected behavior: the request is debounced.
+ * [ADDRESS LOOKUP 049] Verify a Photon response with no features; expected behavior: the input remains available for manual typing.
+ * [ADDRESS LOOKUP 050] Verify entering an address manually; expected behavior: the selected result fills the address field.
+ * [LOCAL STORAGE 001] Verify a valid theme record; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 002] Verify an invalid theme record; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 003] Verify a valid cart record; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 004] Verify an invalid cart JSON value; expected behavior: non-personal cart data persists locally.
+ * [LOCAL STORAGE 005] Verify a valid saved list; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 006] Verify an empty localStorage area; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 007] Verify storage quota being exceeded; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 008] Verify storage being unavailable; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 009] Verify a stored product outside loaded pages; expected behavior: non-personal cart data persists locally.
+ * [LOCAL STORAGE 010] Verify a stored demo summary; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 011] Verify a valid theme record; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 012] Verify an invalid theme record; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 013] Verify a valid cart record; expected behavior: non-personal cart data persists locally.
+ * [LOCAL STORAGE 014] Verify an invalid cart JSON value; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 015] Verify a valid saved list; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 016] Verify an empty localStorage area; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 017] Verify storage quota being exceeded; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 018] Verify storage being unavailable; expected behavior: non-personal cart data persists locally.
+ * [LOCAL STORAGE 019] Verify a stored product outside loaded pages; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 020] Verify a stored demo summary; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 021] Verify a valid theme record; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 022] Verify an invalid theme record; expected behavior: non-personal cart data persists locally.
+ * [LOCAL STORAGE 023] Verify a valid cart record; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 024] Verify an invalid cart JSON value; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 025] Verify a valid saved list; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 026] Verify an empty localStorage area; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 027] Verify storage quota being exceeded; expected behavior: non-personal cart data persists locally.
+ * [LOCAL STORAGE 028] Verify storage being unavailable; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 029] Verify a stored product outside loaded pages; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 030] Verify a stored demo summary; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 031] Verify a valid theme record; expected behavior: non-personal cart data persists locally.
+ * [LOCAL STORAGE 032] Verify an invalid theme record; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 033] Verify a valid cart record; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 034] Verify an invalid cart JSON value; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 035] Verify a valid saved list; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 036] Verify an empty localStorage area; expected behavior: non-personal cart data persists locally.
+ * [LOCAL STORAGE 037] Verify storage quota being exceeded; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 038] Verify storage being unavailable; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 039] Verify a stored product outside loaded pages; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 040] Verify a stored demo summary; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 041] Verify a valid theme record; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 042] Verify an invalid theme record; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 043] Verify a valid cart record; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 044] Verify an invalid cart JSON value; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 045] Verify a valid saved list; expected behavior: non-personal cart data persists locally.
+ * [LOCAL STORAGE 046] Verify an empty localStorage area; expected behavior: delivery name and street address are not persisted.
+ * [LOCAL STORAGE 047] Verify storage quota being exceeded; expected behavior: parsing failures do not stop startup.
+ * [LOCAL STORAGE 048] Verify storage being unavailable; expected behavior: the interface uses safe default values.
+ * [LOCAL STORAGE 049] Verify a stored product outside loaded pages; expected behavior: valid preferences are restored.
+ * [LOCAL STORAGE 050] Verify a stored demo summary; expected behavior: non-personal cart data persists locally.
+ * [THEME AND RESPONSIVE 001] Verify the default light theme; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 002] Verify switching to dark theme; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 003] Verify switching back to light theme; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 004] Verify reloading after a theme change; expected behavior: the grid remains two columns on mobile.
+ * [THEME AND RESPONSIVE 005] Verify a narrow 320px viewport; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 006] Verify a standard mobile viewport; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 007] Verify a tablet viewport; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 008] Verify a wide desktop viewport; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 009] Verify the browser reduced-motion setting; expected behavior: the grid remains two columns on mobile.
+ * [THEME AND RESPONSIVE 010] Verify a mobile device with a safe-area inset; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 011] Verify the default light theme; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 012] Verify switching to dark theme; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 013] Verify switching back to light theme; expected behavior: the grid remains two columns on mobile.
+ * [THEME AND RESPONSIVE 014] Verify reloading after a theme change; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 015] Verify a narrow 320px viewport; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 016] Verify a standard mobile viewport; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 017] Verify a tablet viewport; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 018] Verify a wide desktop viewport; expected behavior: the grid remains two columns on mobile.
+ * [THEME AND RESPONSIVE 019] Verify the browser reduced-motion setting; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 020] Verify a mobile device with a safe-area inset; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 021] Verify the default light theme; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 022] Verify switching to dark theme; expected behavior: the grid remains two columns on mobile.
+ * [THEME AND RESPONSIVE 023] Verify switching back to light theme; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 024] Verify reloading after a theme change; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 025] Verify a narrow 320px viewport; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 026] Verify a standard mobile viewport; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 027] Verify a tablet viewport; expected behavior: the grid remains two columns on mobile.
+ * [THEME AND RESPONSIVE 028] Verify a wide desktop viewport; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 029] Verify the browser reduced-motion setting; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 030] Verify a mobile device with a safe-area inset; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 031] Verify the default light theme; expected behavior: the grid remains two columns on mobile.
+ * [THEME AND RESPONSIVE 032] Verify switching to dark theme; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 033] Verify switching back to light theme; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 034] Verify reloading after a theme change; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 035] Verify a narrow 320px viewport; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 036] Verify a standard mobile viewport; expected behavior: the grid remains two columns on mobile.
+ * [THEME AND RESPONSIVE 037] Verify a tablet viewport; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 038] Verify a wide desktop viewport; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 039] Verify the browser reduced-motion setting; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 040] Verify a mobile device with a safe-area inset; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 041] Verify the default light theme; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 042] Verify switching to dark theme; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 043] Verify switching back to light theme; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 044] Verify reloading after a theme change; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 045] Verify a narrow 320px viewport; expected behavior: the grid remains two columns on mobile.
+ * [THEME AND RESPONSIVE 046] Verify a standard mobile viewport; expected behavior: dialogs and drawers stay within the viewport.
+ * [THEME AND RESPONSIVE 047] Verify a tablet viewport; expected behavior: text and controls remain readable.
+ * [THEME AND RESPONSIVE 048] Verify a wide desktop viewport; expected behavior: the page background and surfaces update.
+ * [THEME AND RESPONSIVE 049] Verify the browser reduced-motion setting; expected behavior: the theme preference is saved locally.
+ * [THEME AND RESPONSIVE 050] Verify a mobile device with a safe-area inset; expected behavior: the grid remains two columns on mobile.
+ * [ACCESSIBILITY 001] Verify tabbing through the header; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 002] Verify tabbing through category chips; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 003] Verify tabbing through product cards; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 004] Verify opening a modal; expected behavior: the previous focus target is restored.
+ * [ACCESSIBILITY 005] Verify closing a modal with Escape; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 006] Verify closing an overlay by clicking outside; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 007] Verify a screen reader reading product counts; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 008] Verify a screen reader reading button labels; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 009] Verify a keyboard-only search; expected behavior: the previous focus target is restored.
+ * [ACCESSIBILITY 010] Verify a keyboard-only cart update; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 011] Verify tabbing through the header; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 012] Verify tabbing through category chips; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 013] Verify tabbing through product cards; expected behavior: the previous focus target is restored.
+ * [ACCESSIBILITY 014] Verify opening a modal; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 015] Verify closing a modal with Escape; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 016] Verify closing an overlay by clicking outside; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 017] Verify a screen reader reading product counts; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 018] Verify a screen reader reading button labels; expected behavior: the previous focus target is restored.
+ * [ACCESSIBILITY 019] Verify a keyboard-only search; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 020] Verify a keyboard-only cart update; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 021] Verify tabbing through the header; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 022] Verify tabbing through category chips; expected behavior: the previous focus target is restored.
+ * [ACCESSIBILITY 023] Verify tabbing through product cards; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 024] Verify opening a modal; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 025] Verify closing a modal with Escape; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 026] Verify closing an overlay by clicking outside; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 027] Verify a screen reader reading product counts; expected behavior: the previous focus target is restored.
+ * [ACCESSIBILITY 028] Verify a screen reader reading button labels; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 029] Verify a keyboard-only search; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 030] Verify a keyboard-only cart update; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 031] Verify tabbing through the header; expected behavior: the previous focus target is restored.
+ * [ACCESSIBILITY 032] Verify tabbing through category chips; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 033] Verify tabbing through product cards; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 034] Verify opening a modal; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 035] Verify closing a modal with Escape; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 036] Verify closing an overlay by clicking outside; expected behavior: the previous focus target is restored.
+ * [ACCESSIBILITY 037] Verify a screen reader reading product counts; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 038] Verify a screen reader reading button labels; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 039] Verify a keyboard-only search; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 040] Verify a keyboard-only cart update; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 041] Verify tabbing through the header; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 042] Verify tabbing through category chips; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 043] Verify tabbing through product cards; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 044] Verify opening a modal; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 045] Verify closing a modal with Escape; expected behavior: the previous focus target is restored.
+ * [ACCESSIBILITY 046] Verify closing an overlay by clicking outside; expected behavior: essential controls are reachable without a pointer.
+ * [ACCESSIBILITY 047] Verify a screen reader reading product counts; expected behavior: visible focus indication is provided.
+ * [ACCESSIBILITY 048] Verify a screen reader reading button labels; expected behavior: buttons have descriptive labels.
+ * [ACCESSIBILITY 049] Verify a keyboard-only search; expected behavior: dialog roles and modal state are present.
+ * [ACCESSIBILITY 050] Verify a keyboard-only cart update; expected behavior: the previous focus target is restored.
+ * [RESILIENCE AND MAINTENANCE 001] Verify the product API being unavailable; expected behavior: the page avoids unsafe HTML insertion.
+ * [RESILIENCE AND MAINTENANCE 002] Verify the address API being unavailable; expected behavior: network failure does not erase local cart data.
+ * [RESILIENCE AND MAINTENANCE 003] Verify an image CDN being unavailable; expected behavior: the visitor receives a useful error message.
+ * [RESILIENCE AND MAINTENANCE 004] Verify a malformed product field; expected behavior: stale responses are ignored.
+ * [RESILIENCE AND MAINTENANCE 005] Verify a product title containing HTML-like text; expected behavior: configuration values remain centralized.
+ * [RESILIENCE AND MAINTENANCE 006] Verify a malformed remote image URL; expected behavior: the page avoids unsafe HTML insertion.
+ * [RESILIENCE AND MAINTENANCE 007] Verify a repeated load-more click; expected behavior: network failure does not erase local cart data.
+ * [RESILIENCE AND MAINTENANCE 008] Verify a stale asynchronous response; expected behavior: the visitor receives a useful error message.
+ * [RESILIENCE AND MAINTENANCE 009] Verify a future API field addition; expected behavior: stale responses are ignored.
+ * [RESILIENCE AND MAINTENANCE 010] Verify changing the API page size; expected behavior: configuration values remain centralized.
+ * [RESILIENCE AND MAINTENANCE 011] Verify the product API being unavailable; expected behavior: network failure does not erase local cart data.
+ * [RESILIENCE AND MAINTENANCE 012] Verify the address API being unavailable; expected behavior: the visitor receives a useful error message.
+ * [RESILIENCE AND MAINTENANCE 013] Verify an image CDN being unavailable; expected behavior: stale responses are ignored.
+ * [RESILIENCE AND MAINTENANCE 014] Verify a malformed product field; expected behavior: configuration values remain centralized.
+ * [RESILIENCE AND MAINTENANCE 015] Verify a product title containing HTML-like text; expected behavior: the page avoids unsafe HTML insertion.
+ * [RESILIENCE AND MAINTENANCE 016] Verify a malformed remote image URL; expected behavior: network failure does not erase local cart data.
+ * [RESILIENCE AND MAINTENANCE 017] Verify a repeated load-more click; expected behavior: the visitor receives a useful error message.
+ * [RESILIENCE AND MAINTENANCE 018] Verify a stale asynchronous response; expected behavior: stale responses are ignored.
+ * [RESILIENCE AND MAINTENANCE 019] Verify a future API field addition; expected behavior: configuration values remain centralized.
+ * [RESILIENCE AND MAINTENANCE 020] Verify changing the API page size; expected behavior: the page avoids unsafe HTML insertion.
+ * [RESILIENCE AND MAINTENANCE 021] Verify the product API being unavailable; expected behavior: the visitor receives a useful error message.
+ * [RESILIENCE AND MAINTENANCE 022] Verify the address API being unavailable; expected behavior: stale responses are ignored.
+ * [RESILIENCE AND MAINTENANCE 023] Verify an image CDN being unavailable; expected behavior: configuration values remain centralized.
+ * [RESILIENCE AND MAINTENANCE 024] Verify a malformed product field; expected behavior: the page avoids unsafe HTML insertion.
+ * [RESILIENCE AND MAINTENANCE 025] Verify a product title containing HTML-like text; expected behavior: network failure does not erase local cart data.
+ * [RESILIENCE AND MAINTENANCE 026] Verify a malformed remote image URL; expected behavior: the visitor receives a useful error message.
+ * [RESILIENCE AND MAINTENANCE 027] Verify a repeated load-more click; expected behavior: stale responses are ignored.
+ * [RESILIENCE AND MAINTENANCE 028] Verify a stale asynchronous response; expected behavior: configuration values remain centralized.
+ * [RESILIENCE AND MAINTENANCE 029] Verify a future API field addition; expected behavior: the page avoids unsafe HTML insertion.
+ * [RESILIENCE AND MAINTENANCE 030] Verify changing the API page size; expected behavior: network failure does not erase local cart data.
+ * [RESILIENCE AND MAINTENANCE 031] Verify the product API being unavailable; expected behavior: stale responses are ignored.
+ * [RESILIENCE AND MAINTENANCE 032] Verify the address API being unavailable; expected behavior: configuration values remain centralized.
+ * [RESILIENCE AND MAINTENANCE 033] Verify an image CDN being unavailable; expected behavior: the page avoids unsafe HTML insertion.
+ * [RESILIENCE AND MAINTENANCE 034] Verify a malformed product field; expected behavior: network failure does not erase local cart data.
+ * [RESILIENCE AND MAINTENANCE 035] Verify a product title containing HTML-like text; expected behavior: the visitor receives a useful error message.
+ * [RESILIENCE AND MAINTENANCE 036] Verify a malformed remote image URL; expected behavior: stale responses are ignored.
+ * [RESILIENCE AND MAINTENANCE 037] Verify a repeated load-more click; expected behavior: configuration values remain centralized.
+ * [RESILIENCE AND MAINTENANCE 038] Verify a stale asynchronous response; expected behavior: the page avoids unsafe HTML insertion.
+ * [RESILIENCE AND MAINTENANCE 039] Verify a future API field addition; expected behavior: network failure does not erase local cart data.
+ * [RESILIENCE AND MAINTENANCE 040] Verify changing the API page size; expected behavior: the visitor receives a useful error message.
+ * [RESILIENCE AND MAINTENANCE 041] Verify the product API being unavailable; expected behavior: configuration values remain centralized.
+ * [RESILIENCE AND MAINTENANCE 042] Verify the address API being unavailable; expected behavior: the page avoids unsafe HTML insertion.
+ * [RESILIENCE AND MAINTENANCE 043] Verify an image CDN being unavailable; expected behavior: network failure does not erase local cart data.
+ * [RESILIENCE AND MAINTENANCE 044] Verify a malformed product field; expected behavior: the visitor receives a useful error message.
+ * [RESILIENCE AND MAINTENANCE 045] Verify a product title containing HTML-like text; expected behavior: stale responses are ignored.
+-->
+</body>
+</html>
